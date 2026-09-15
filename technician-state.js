@@ -160,5 +160,15 @@
     }
   }
 
+  function loadAdminVehicles() {
+    if (document.querySelector('script[data-admin-vehicles]')) return;
+    const script = document.createElement('script');
+    script.src = './admin-vehicles.js?v=20260915-pwa-15';
+    script.dataset.adminVehicles = '1';
+    script.async = false;
+    document.head.appendChild(script);
+  }
+
   patchRefreshWhenArchivesReady();
+  loadAdminVehicles();
 })();
