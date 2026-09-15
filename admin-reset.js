@@ -11,7 +11,7 @@ function enhanceAdminResetButtons(){
     const btn=document.createElement('button');
     btn.className='secondary reset-sheet';
     btn.textContent='RAZ feuille';
-    btn.title='Réinitialiser complètement la feuille de cette semaine';
+    btn.title='Supprimer complètement la feuille de cette semaine';
     btn.onclick=()=>resetAdminTimesheet(account);
     actions.append(btn);
   });
@@ -21,57 +21,37 @@ async function resetAdminTimesheet(account){
   const weekInput=document.getElementById('adminWeekInput');
   if(!weekInput) return;
   const weekStart=mondayOfWeekValue(weekInput.value);
-  const message=`Réinitialiser complètement la feuille de ${account.full_name} pour cette semaine ?\n\nToutes les heures, absences, zones trajet, commentaires et signatures seront effacés. La feuille repassera en brouillon.`;
+  const message=`Supprimer définitivement la feuille de ${account.full_name} pour cette semaine ?\n\nToutes les heures, absences, zones trajet, commentaires et signatures seront supprimés. La ligne repassera ensuite à « Aucune feuille ».\n\nCette action est irréversible.`;
   if(!confirm(message)) return;
   try{
     if(!isCloud){
       const db=demoDb();
-      const s=db.sheets.find(x=>x.technician_id===account.id && x.week_start===weekStart);
-      if(!s){alert('Aucune feuille à réinitialiser.');return;}
-      s.vehicle_id='';
-      s.general_comment='';
-      s.status='draft';
-      s.submitted_at=null;
-      s.approved_at=null;
-      s.technician_signature='';
-      s.responsible_signature='';
-      s.responsible_name='';
-      s.admin_changes=[];
-      s.days=DAYS.map((name,i)=>({
-        date:dateForDay(weekStart,i),name,zone:0,absent:false,comment:'',
-        entries:[{project_id:state.projects[0]?.id||'',manual_project_code:'',manual_project_name:'',hours:0}]
-      }));
+      const idx=db.sheets.findIndex(x=>x.technician_id===account.id && x.week_start===weekStart);
+      if(idx<0){alert('Aucune feuille à supprimer.');return;}
+      db.sheets.splice(idx,1);
       saveDemoDb(db);
     } else {
       const {data:ts,error}=await sb.from('ljs_timesheets').select('id').eq('technician_id',account.id).eq('week_start',weekStart).maybeSingle();
       if(error) throw error;
-      if(!ts){alert('Aucune feuille à réinitialiser.');return;}
-      const upd=await sb.from('ljs_timesheets').update({
-        vehicle_id:null,
-        general_comment:'',
-        status:'draft',
-        submitted_at:null,
-        approved_at:null,
-        technician_signature:null,
-        responsible_signature:null,
-        responsible_name:null,
-        admin_changes:[]
-      }).eq('id',ts.id);
-      if(upd.error) throw upd.error;
-      const ddel=await sb.from('ljs_day_entries').delete().eq('timesheet_id',ts.id);
-      if(ddel.error) throw ddel.error;
+      if(!ts){alert('Aucune feuille à supprimer.');return;}
+
       const wdel=await sb.from('ljs_work_entries').delete().eq('timesheet_id',ts.id);
       if(wdel.error) throw wdel.error;
+      const ddel=await sb.from('ljs_day_entries').delete().eq('timesheet_id',ts.id);
+      if(ddel.error) throw ddel.error;
+      const tdel=await sb.from('ljs_timesheets').delete().eq('id',ts.id);
+      if(tdel.error) throw tdel.error;
+
       if(state.adminSheet?.id===ts.id){
         state.adminSheet=null;
         document.getElementById('adminEditor')?.classList.add('hidden');
       }
     }
     await refreshAdmin();
-    alert(`La feuille de ${account.full_name} a été réinitialisée.`);
+    alert(`La feuille de ${account.full_name} a été supprimée.`);
   }catch(e){
     console.error(e);
-    alert('Impossible de réinitialiser la feuille : '+(e.message||e));
+    alert('Impossible de supprimer la feuille : '+(e.message||e));
   }
 }
 
