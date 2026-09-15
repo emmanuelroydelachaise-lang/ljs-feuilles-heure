@@ -23,12 +23,30 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate PWA PNG icons
+        run: |
+          python -m pip install --quiet cairosvg
+          python - <<'PY'
+          import cairosvg
+          cairosvg.svg2png(url='app-icon.svg', write_to='icon-192-v3.png', output_width=192, output_height=192)
+          cairosvg.svg2png(url='app-icon.svg', write_to='icon-512-v3.png', output_width=512, output_height=512)
+          cairosvg.svg2png(url='app-icon-maskable.svg', write_to='icon-maskable-512-v3.png', output_width=512, output_height=512)
+          PY
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
