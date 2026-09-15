@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260915-pwa-8';
+  const VERSION = '20260915-pwa-10';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
@@ -71,6 +71,22 @@
     document.head.appendChild(script);
   }
 
+  function loadPrintReliabilityFixes() {
+    if (!document.querySelector('link[data-print-fit-fix]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `./print-fit.css?v=${VERSION}`;
+      link.dataset.printFitFix = '1';
+      document.head.appendChild(link);
+    }
+    if (!document.querySelector('script[data-print-ready-fix]')) {
+      const script = document.createElement('script');
+      script.src = `./print-ready-fix.js?v=${VERSION}`;
+      script.dataset.printReadyFix = '1';
+      document.head.appendChild(script);
+    }
+  }
+
   function installButton() {
     return document.getElementById('installBtn');
   }
@@ -133,6 +149,7 @@
   document.addEventListener('DOMContentLoaded', async () => {
     installInlineLogos();
     loadPrintLogoFix();
+    loadPrintReliabilityFixes();
 
     let btn = installButton();
     if (btn) {
@@ -149,5 +166,6 @@
     await registerServiceWorker();
     installInlineLogos();
     loadPrintLogoFix();
+    loadPrintReliabilityFixes();
   });
 })();
