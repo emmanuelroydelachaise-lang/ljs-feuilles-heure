@@ -167,3 +167,11 @@ loadAdminSheet = async function(id, technicianName='') {
     })
   },ts.week_start);
 };
+
+const basePrintTimesheet=printTimesheet;
+printTimesheet=function(sheet,technicianName){
+  const employmentType=sheet?.technician_employment_type || technicianById(sheet?.technician_id)?.employment_type || 'employee';
+  const agency=sheet?.technician_interim_agency || technicianById(sheet?.technician_id)?.interim_agency || '';
+  const displayName=employmentType==='interim' && agency ? `${technicianName} (${agency})` : technicianName;
+  return basePrintTimesheet(sheet,displayName);
+};
