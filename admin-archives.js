@@ -89,15 +89,68 @@
         btn.classList.add('delete-tech');
         btn.onclick = () => deleteTechnician(t);
       }
-      const meta = row.querySelector('.meta');
-      if (meta && meta.textContent.startsWith('Actif')) meta.textContent = meta.textContent.replace(/^Actif/, 'Actif');
     });
 
     const sheetRows = [...document.querySelectorAll('#adminTimesheets .admin-sheet-row')];
     sheetRows.forEach((row, index) => {
       const t = technicians[index];
-      if (t?.active === false) row.remove();
+      if (t?.active === false) {
+        row.remove();
+        return;
+      }
+      const meta = row.querySelector('.meta')?.textContent || '';
+      if (meta.includes('Validée responsable')) row.remove();
     });
+  }
+
+  async function verifyResponsiblePin() {
+    const pin = prompt('Code responsable requis pour supprimer définitivement cette feuille :');
+    if (pin === null) return false;
+    if (!/^\d{4}$/.test(pin.trim())) {
+      alert('Le code responsable doit contenir 4 chiffres.');
+      return false;
+    }
+    if (typeof window.verifyResponsiblePinEntry !== 'function') {
+      alert('La vérification du code responsable n’est pas disponible. Reconnecte-toi à l’accès responsable puis réessaie.');
+      return false;
+    }
+    const ok = await window.verifyResponsiblePinEntry(pin.trim());
+    if (!ok) alert('Code responsable incorrect.');
+    return ok;
+  }
+
+  async function deleteArchivedSheet(sheet, technicianName) {
+    if (!(await verifyResponsiblePin())) return;
+    const label = `Semaine ${weekNumber(sheet.week_start)} — ${technicianName}`;
+    if (!confirm(`Supprimer définitivement la feuille ${label} ?\n\nCette action est irréversible.`)) return;
+
+    try {
+      if (!isCloud) {
+        const db = demoDb();
+        const idx = (db.sheets || []).findIndex(x => x.id === sheet.id);
+        if (idx < 0) throw new Error('Feuille introuvable.');
+        db.sheets.splice(idx, 1);
+        saveDemoDb(db);
+      } else {
+        const wdel = await sb.from('ljs_work_entries').delete().eq('timesheet_id', sheet.id);
+        if (wdel.error) throw wdel.error;
+        const ddel = await sb.from('ljs_day_entries').delete().eq('timesheet_id', sheet.id);
+        if (ddel.error) throw ddel.error;
+        const tdel = await sb.from('ljs_timesheets').delete().eq('id', sheet.id);
+        if (tdel.error) throw tdel.error;
+      }
+
+      if (state.adminSheet?.id === sheet.id) {
+        state.adminSheet = null;
+        document.getElementById('adminEditor')?.classList.add('hidden');
+      }
+
+      await refreshAdmin();
+      alert(`La feuille ${label} a été supprimée.`);
+    } catch (e) {
+      console.error(e);
+      alert('Impossible de supprimer cette feuille : ' + (e.message || e));
+    }
   }
 
   async function getArchiveSheets() {
@@ -172,6 +225,7 @@
             <div class="admin-row-actions">
               <button class="secondary archive-open">Ouvrir / modifier</button>
               <button class="secondary archive-print">Imprimer</button>
+              <button class="secondary archive-delete" style="border-color:#d92d20;color:#b42318;background:#fff4f2">Supprimer</button>
             </div>`;
 
           row.querySelector('.archive-open').onclick = () => openAdminSheet(s.id, group.name);
@@ -183,6 +237,7 @@
               alert('Impossible d’ouvrir cette feuille : ' + (e.message || e));
             }
           };
+          row.querySelector('.archive-delete').onclick = () => deleteArchivedSheet(s, group.name);
           list.appendChild(row);
         });
 
