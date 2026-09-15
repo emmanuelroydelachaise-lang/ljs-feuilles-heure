@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260915-pwa-7';
+  const VERSION = '20260915-pwa-8';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
@@ -63,6 +63,14 @@
     if (liveLoginImg) liveLoginImg.replaceWith(createLogo('login-logo', true));
   }
 
+  function loadPrintLogoFix() {
+    if (document.querySelector('script[data-print-logo-fix]')) return;
+    const script = document.createElement('script');
+    script.src = `./print-logo-fix.js?v=${VERSION}`;
+    script.dataset.printLogoFix = '1';
+    document.head.appendChild(script);
+  }
+
   function installButton() {
     return document.getElementById('installBtn');
   }
@@ -124,6 +132,7 @@
 
   document.addEventListener('DOMContentLoaded', async () => {
     installInlineLogos();
+    loadPrintLogoFix();
 
     let btn = installButton();
     if (btn) {
@@ -139,5 +148,6 @@
 
     await registerServiceWorker();
     installInlineLogos();
+    loadPrintLogoFix();
   });
 })();
