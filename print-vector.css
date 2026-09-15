@@ -1,7 +1,12 @@
+.header-logo{width:52px!important;height:52px!important;max-height:52px!important;object-fit:contain!important;}
+.login-brand img{width:112px!important;max-height:132px!important;object-fit:contain!important;}
+.reset-sheet{border-color:#d92d20!important;color:#b42318!important;background:#fff4f2!important;}
+.reset-sheet:hover{background:#ffe7e2!important;}
+
 @media print {
   .exact-print-sheet {
     background-color: #fff !important;
-    background-image: url('./print-template.svg?v=vector-20260915-1') !important;
+    background-image: url('./print-template.svg?v=vector-20260915-2') !important;
     background-repeat: no-repeat !important;
     background-position: 0 0 !important;
     background-size: 100% 100% !important;
@@ -9,4 +14,16 @@
     -webkit-print-color-adjust: exact !important;
   }
   .exact-print-bg { display: none !important; }
+  .exact-print-sheet::after{
+    content:"";
+    position:absolute;
+    z-index:1;
+    left:1.0%;
+    top:0.8%;
+    width:6.5%;
+    height:7.2%;
+    background:#fff url('./brand.svg?v=20260915-2') no-repeat center/contain;
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
 }
