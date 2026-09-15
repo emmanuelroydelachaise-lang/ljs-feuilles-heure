@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0668a9" />
   <title>LJS Energies — Feuilles d'heures</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260915-pwa-3" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192-v2.png?v=20260915-pwa-3" />
-  <link rel="apple-touch-icon" href="./icon-192-v2.png?v=20260915-pwa-3" />
-  <link rel="stylesheet" href="styles.css?v=20260915-pwa-3" />
-  <link rel="stylesheet" href="print-vector.css?v=20260915-pwa-3" />
+  <link rel="manifest" href="./manifest.webmanifest?v=20260915-pwa-4" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192-v2.png?v=20260915-pwa-4" />
+  <link rel="apple-touch-icon" href="./icon-192-v2.png?v=20260915-pwa-4" />
+  <link rel="stylesheet" href="styles.css?v=20260915-pwa-4" />
+  <link rel="stylesheet" href="print-vector.css?v=20260915-pwa-4" />
 </head>
 <body>
   <header class="app-header">
     <div class="header-brand">
-      <img src="./brand.png?v=20260915-pwa-3" alt="LJS Energies" class="header-logo" />
+      <img src="./brand.svg?v=20260915-pwa-4" alt="LJS Energies" class="header-logo" />
       <div>
         <div class="brand">LJS ENERGIES</div>
         <div class="subtitle">Feuilles d'heures</div>
       </div>
     </div>
-    <button id="installBtn" class="ghost">Installer</button>
+    <button id="installBtn" class="ghost">Installer l’application</button>
   </header>
 
   <main id="app" class="container"></main>
@@ -28,7 +28,7 @@
 
   <template id="loginTemplate">
     <section class="card login-card">
-      <div class="login-brand"><img src="./brand.png?v=20260915-pwa-3" alt="LJS Energies"><div class="ljs-color-bar"></div></div>
+      <div class="login-brand"><img src="./brand.svg?v=20260915-pwa-4" alt="LJS Energies"><div class="ljs-color-bar"></div></div>
       <h1>Sélection du technicien</h1>
       <label>Technicien</label>
       <select id="techSelect"></select>
@@ -43,49 +43,23 @@
 
   <template id="weekTemplate">
     <section class="toolbar card">
-      <div>
-        <div class="small muted">Technicien</div>
-        <strong id="who"></strong>
-      </div>
+      <div><div class="small muted">Technicien</div><strong id="who"></strong></div>
       <button id="logoutBtn" class="ghost">Quitter</button>
     </section>
-
     <section class="card week-head">
       <div class="field-row">
-        <div>
-          <label>Semaine</label>
-          <input id="weekInput" type="week" />
-        </div>
-        <div>
-          <label>Véhicule</label>
-          <select id="vehicleSelect"></select>
-        </div>
+        <div><label>Semaine</label><input id="weekInput" type="week" /></div>
+        <div><label>Véhicule</label><select id="vehicleSelect"></select></div>
       </div>
-      <div class="status-row">
-        <span id="statusBadge" class="badge"></span>
-        <strong id="weekTotal">0,00 h</strong>
-      </div>
+      <div class="status-row"><span id="statusBadge" class="badge"></span><strong id="weekTotal">0,00 h</strong></div>
     </section>
-
     <div id="days"></div>
-
-    <section class="card">
-      <label>Commentaire général de la semaine</label>
-      <textarea id="weekComment" rows="3" placeholder="Commentaire général"></textarea>
-    </section>
-
+    <section class="card"><label>Commentaire général de la semaine</label><textarea id="weekComment" rows="3" placeholder="Commentaire général"></textarea></section>
     <section class="card signature-card">
-      <div class="signature-head">
-        <div>
-          <h2>Signature du technicien</h2>
-          <p class="hint">La signature est obligatoire pour valider la semaine.</p>
-        </div>
-        <button id="clearTechSignature" class="secondary">Effacer</button>
-      </div>
+      <div class="signature-head"><div><h2>Signature du technicien</h2><p class="hint">La signature est obligatoire pour valider la semaine.</p></div><button id="clearTechSignature" class="secondary">Effacer</button></div>
       <canvas id="techSignatureCanvas" class="signature-pad" width="900" height="220"></canvas>
       <img id="techSignatureImage" class="signature-preview hidden" alt="Signature du technicien" />
     </section>
-
     <section class="card actions three-actions">
       <button id="saveBtn" class="secondary">Enregistrer</button>
       <button id="printTechBtn" class="secondary">Aperçu / Imprimer</button>
@@ -95,50 +69,27 @@
   </template>
 
   <template id="adminTemplate">
-    <section class="toolbar card">
-      <div>
-        <div class="small muted">Mode</div>
-        <strong>Responsable</strong>
-      </div>
-      <button id="adminLogoutBtn" class="ghost">Quitter</button>
-    </section>
-
+    <section class="toolbar card"><div><div class="small muted">Mode</div><strong>Responsable</strong></div><button id="adminLogoutBtn" class="ghost">Quitter</button></section>
     <section id="adminListCard" class="card">
       <h2>Feuilles des techniciens</h2>
-      <div class="field-row">
-        <div>
-          <label>Semaine</label>
-          <input id="adminWeekInput" type="week" />
-        </div>
-        <button id="refreshAdmin" class="secondary align-end">Actualiser</button>
-      </div>
+      <div class="field-row"><div><label>Semaine</label><input id="adminWeekInput" type="week" /></div><button id="refreshAdmin" class="secondary align-end">Actualiser</button></div>
       <div id="adminTimesheets" class="stack"></div>
     </section>
-
     <section id="adminEditor" class="hidden"></section>
-
     <section class="card">
       <h2>Techniciens</h2>
       <p class="hint">Ajoute, modifie ou retire un technicien. Pour un intérimaire, indique également son agence d’intérim.</p>
       <div class="technician-add">
         <input id="newTechName" placeholder="Nom et prénom" />
-        <select id="newTechType">
-          <option value="employee">Salarié</option>
-          <option value="interim">Intérim</option>
-        </select>
+        <select id="newTechType"><option value="employee">Salarié</option><option value="interim">Intérim</option></select>
         <input id="newTechPin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="PIN 4 chiffres" />
         <button id="addTechBtn" class="primary">Ajouter</button>
       </div>
       <div id="adminTechnicians" class="stack"></div>
     </section>
-
     <section class="card">
       <h2>Chantiers</h2>
-      <div class="project-add">
-        <input id="newProjectCode" placeholder="N° affaire" />
-        <input id="newProjectName" placeholder="Nom du chantier" />
-        <button id="addProjectBtn" class="primary">Ajouter</button>
-      </div>
+      <div class="project-add"><input id="newProjectCode" placeholder="N° affaire" /><input id="newProjectName" placeholder="Nom du chantier" /><button id="addProjectBtn" class="primary">Ajouter</button></div>
       <div id="adminProjects" class="stack"></div>
     </section>
   </template>
@@ -155,17 +106,17 @@
   </template>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js?v=20260915-pwa-3"></script>
-  <script src="app-1.js?v=20260915-pwa-3"></script>
-  <script src="app-2.js?v=20260915-pwa-3"></script>
-  <script src="app-3.js?v=20260915-pwa-3"></script>
-  <script src="app-4.js?v=20260915-pwa-3"></script>
-  <script src="app-5.js?v=20260915-pwa-3"></script>
-  <script src="app-6.js?v=20260915-pwa-3"></script>
-  <script src="admin-reset.js?v=20260915-pwa-3"></script>
-  <script src="ui-labels.js?v=20260915-pwa-3"></script>
-  <script src="admin-projects.js?v=20260915-pwa-3"></script>
-  <script src="interim-agency.js?v=20260915-pwa-3"></script>
-  <script src="pwa-clean.js?v=20260915-pwa-3"></script>
+  <script src="config.js?v=20260915-pwa-4"></script>
+  <script src="app-1.js?v=20260915-pwa-4"></script>
+  <script src="app-2.js?v=20260915-pwa-4"></script>
+  <script src="app-3.js?v=20260915-pwa-4"></script>
+  <script src="app-4.js?v=20260915-pwa-4"></script>
+  <script src="app-5.js?v=20260915-pwa-4"></script>
+  <script src="app-6.js?v=20260915-pwa-4"></script>
+  <script src="admin-reset.js?v=20260915-pwa-4"></script>
+  <script src="ui-labels.js?v=20260915-pwa-4"></script>
+  <script src="admin-projects.js?v=20260915-pwa-4"></script>
+  <script src="interim-agency.js?v=20260915-pwa-4"></script>
+  <script src="pwa-clean.js?v=20260915-pwa-4"></script>
 </body>
 </html>
