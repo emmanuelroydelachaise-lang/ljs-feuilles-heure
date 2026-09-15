@@ -144,4 +144,9 @@
     ensureVehicleCard();
     await renderAdminVehicles();
   };
+
+  if (document.getElementById('adminProjects')) {
+    ensureVehicleCard();
+    renderAdminVehicles();
+  }
 })();
