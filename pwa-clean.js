@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260915-pwa-4';
+  const VERSION = '20260915-pwa-5';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
@@ -8,7 +8,7 @@
 
   function setFreshAssetUrls() {
     document.querySelectorAll('.header-logo, .login-brand img').forEach(img => {
-      img.src = `./brand.svg?v=${VERSION}`;
+      img.src = `./brand.png?v=${VERSION}`;
     });
     const manifest = document.querySelector('link[rel="manifest"]');
     if (manifest) manifest.href = `./manifest.webmanifest?v=${VERSION}`;
