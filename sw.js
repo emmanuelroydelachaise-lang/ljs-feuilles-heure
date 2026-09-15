@@ -1,9 +1,9 @@
-const CACHE = 'ljs-heures-v20';
+const CACHE = 'ljs-heures-v21';
 const ASSETS = [
   './', './index.html', './styles.css', './print-vector.css', './config.js',
   './app-1.js', './app-2.js', './app-3.js', './app-4.js', './app-5.js', './app-6.js',
   './admin-reset.js', './ui-labels.js', './admin-projects.js', './interim-agency.js', './pwa-clean.js',
-  './manifest.webmanifest', './brand.svg', './icon-192-v2.png', './icon-512-v2.png', './print-template.svg'
+  './manifest.webmanifest', './brand.png', './icon-192-v2.png', './icon-512-v2.png', './print-template.svg'
 ];
 
 self.addEventListener('install', event => {
