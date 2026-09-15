@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260915-pwa-10';
+  const VERSION = '20260915-pwa-12';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
@@ -83,6 +83,24 @@
       const script = document.createElement('script');
       script.src = `./print-ready-fix.js?v=${VERSION}`;
       script.dataset.printReadyFix = '1';
+      script.async = false;
+      document.head.appendChild(script);
+    }
+  }
+
+  function loadAdminArchiveAssets() {
+    if (!document.querySelector('link[data-admin-archives]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `./admin-archives.css?v=${VERSION}`;
+      link.dataset.adminArchives = '1';
+      document.head.appendChild(link);
+    }
+    if (!document.querySelector('script[data-admin-archives]')) {
+      const script = document.createElement('script');
+      script.src = `./admin-archives.js?v=${VERSION}`;
+      script.dataset.adminArchives = '1';
+      script.async = false;
       document.head.appendChild(script);
     }
   }
@@ -150,6 +168,7 @@
     installInlineLogos();
     loadPrintLogoFix();
     loadPrintReliabilityFixes();
+    loadAdminArchiveAssets();
 
     let btn = installButton();
     if (btn) {
@@ -167,5 +186,6 @@
     installInlineLogos();
     loadPrintLogoFix();
     loadPrintReliabilityFixes();
+    loadAdminArchiveAssets();
   });
 })();
