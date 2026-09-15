@@ -5,15 +5,15 @@
 
 @media print {
   .exact-print-sheet {
-    background-color: #fff !important;
-    background-image: url('./print-template.svg?v=vector-20260915-2') !important;
-    background-repeat: no-repeat !important;
-    background-position: 0 0 !important;
-    background-size: 100% 100% !important;
-    print-color-adjust: exact !important;
-    -webkit-print-color-adjust: exact !important;
+    background-color:#fff!important;
+    background-image:url('./print-template.svg?v=vector-20260915-2')!important;
+    background-repeat:no-repeat!important;
+    background-position:0 0!important;
+    background-size:100% 100%!important;
+    print-color-adjust:exact!important;
+    -webkit-print-color-adjust:exact!important;
   }
-  .exact-print-bg { display: none !important; }
+  .exact-print-bg{display:none!important;}
   .exact-print-sheet::after{
     content:"";
     position:absolute;
@@ -22,7 +22,7 @@
     top:0.8%;
     width:6.5%;
     height:7.2%;
-    background:#fff url('./logo-ljs-v2.png?v=20260915-6') no-repeat center/contain;
+    background:#fff url('./brand.svg?v=20260915-pwa-4') no-repeat center/contain;
     print-color-adjust:exact;
     -webkit-print-color-adjust:exact;
   }
