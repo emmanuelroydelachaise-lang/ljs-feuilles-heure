@@ -1,5 +1,6 @@
-// Affichage des chantiers côté responsable : seuls les chantiers actifs sont visibles.
+// Gestion des chantiers côté responsable : seuls les chantiers actifs sont visibles.
 // "Supprimer" désactive le chantier afin de préserver les anciennes feuilles d'heures.
+// "Modifier" permet de changer le numéro d'affaire et le nom du chantier.
 renderAdminProjects = async function() {
   const box=document.getElementById('adminProjects');
   if(!box) return;
@@ -24,10 +25,48 @@ renderAdminProjects = async function() {
 
   projects.forEach(p=>{
     const el=document.createElement('div');
-    el.className='admin-item';
+    el.className='admin-item project-admin-item';
     el.innerHTML=`
-      <div><strong>${esc(p.code)} — ${esc(p.name)}</strong></div>
-      <button class="secondary delete-project">Supprimer</button>`;
+      <div class="project-summary"><strong>${esc(p.code)} — ${esc(p.name)}</strong></div>
+      <div class="admin-row-actions">
+        <button class="secondary edit-project">Modifier</button>
+        <button class="secondary delete-project">Supprimer</button>
+      </div>
+      <div class="project-edit-form hidden" style="width:100%;margin-top:10px;">
+        <div class="project-add">
+          <input class="edit-project-code" value="${esc(p.code)}" placeholder="N° affaire">
+          <input class="edit-project-name" value="${esc(p.name)}" placeholder="Nom du chantier">
+          <button class="primary save-project-edit">Enregistrer</button>
+          <button class="ghost dark-ghost cancel-project-edit">Annuler</button>
+        </div>
+      </div>`;
+
+    const form=el.querySelector('.project-edit-form');
+    el.querySelector('.edit-project').onclick=()=>form.classList.remove('hidden');
+    el.querySelector('.cancel-project-edit').onclick=()=>form.classList.add('hidden');
+
+    el.querySelector('.save-project-edit').onclick=async()=>{
+      const code=el.querySelector('.edit-project-code').value.trim();
+      const name=el.querySelector('.edit-project-name').value.trim();
+      if(!code || !name){
+        alert('Renseigne le numéro d’affaire et le nom du chantier.');
+        return;
+      }
+      try{
+        if(!isCloud){
+          const db=demoDb();
+          const x=db.projects.find(x=>x.id===p.id);
+          if(x){x.code=code;x.name=name;}
+          saveDemoDb(db);
+        } else {
+          const {error}=await sb.from('ljs_projects').update({code,name}).eq('id',p.id);
+          if(error) throw error;
+        }
+        await refreshAdmin();
+      }catch(e){
+        alert('Impossible de modifier le chantier : '+(e.message||e));
+      }
+    };
 
     el.querySelector('.delete-project').onclick=async()=>{
       if(!confirm(`Supprimer le chantier ${p.code} — ${p.name} de la liste ?\n\nIl disparaîtra de l'onglet responsable mais restera conservé dans les anciennes feuilles d'heures.`)) return;
