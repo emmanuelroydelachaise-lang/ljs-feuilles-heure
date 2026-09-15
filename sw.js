@@ -1,37 +1,17 @@
-const CACHE = 'ljs-heures-v19';
+const CACHE = 'ljs-heures-v20';
 const ASSETS = [
-  './',
-  './index.html',
-  './styles.css',
-  './print-vector.css',
-  './config.js',
-  './app-1.js',
-  './app-2.js',
-  './app-3.js',
-  './app-4.js',
-  './app-5.js',
-  './app-6.js',
-  './admin-reset.js',
-  './ui-labels.js',
-  './admin-projects.js',
-  './interim-agency.js',
-  './pwa-clean.js',
-  './manifest.webmanifest',
-  './brand.png',
-  './icon-192-v2.png',
-  './icon-512-v2.png',
-  './print-template.svg'
+  './', './index.html', './styles.css', './print-vector.css', './config.js',
+  './app-1.js', './app-2.js', './app-3.js', './app-4.js', './app-5.js', './app-6.js',
+  './admin-reset.js', './ui-labels.js', './admin-projects.js', './interim-agency.js', './pwa-clean.js',
+  './manifest.webmanifest', './brand.svg', './icon-192-v2.png', './icon-512-v2.png', './print-template.svg'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     for (const asset of ASSETS) {
-      try {
-        await cache.add(asset);
-      } catch (error) {
-        console.warn('PWA cache skipped:', asset, error);
-      }
+      try { await cache.add(asset); }
+      catch (error) { console.warn('PWA cache skipped:', asset, error); }
     }
     await self.skipWaiting();
   })());
@@ -47,7 +27,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-
   event.respondWith((async () => {
     try {
       const response = await fetch(event.request, { cache: 'no-store' });
@@ -57,10 +36,10 @@ self.addEventListener('fetch', event => {
         cache.put(event.request, copy).catch(() => {});
       }
       return response;
-    } catch (_) {
+    } catch (error) {
       const cached = await caches.match(event.request, { ignoreSearch: true });
       if (cached) return cached;
-      throw _;
+      throw error;
     }
   })());
 });
