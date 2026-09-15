@@ -1,0 +1,12 @@
+@media print {
+  .exact-print-sheet {
+    background-color: #fff !important;
+    background-image: url('./print-template.svg?v=vector-20260915-1') !important;
+    background-repeat: no-repeat !important;
+    background-position: 0 0 !important;
+    background-size: 100% 100% !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  .exact-print-bg { display: none !important; }
+}
