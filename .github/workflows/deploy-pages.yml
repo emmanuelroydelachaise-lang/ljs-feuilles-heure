@@ -23,8 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Reconstitue le modèle d'impression complet
-        run: cat .github/print-template/exact-0.b64 .github/print-template/exact-1.b64 .github/print-template/exact-2.b64 .github/print-template/exact-3.b64 | base64 --decode > print-template.png
+      - name: Reconstitue le modèle d'impression couleur
+        run: base64 --decode .github/print-template/exact-0.b64 > print-template.png
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
