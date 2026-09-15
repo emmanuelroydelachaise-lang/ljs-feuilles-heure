@@ -1,1 +1,1 @@
-Préparation du logo PNG exact validé par Emmanuel.
+Correctif logo/PWA 2026-09-15 v6 : nouveaux chemins logo et icônes, cache v18, bouton Installer visible.
