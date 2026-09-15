@@ -2,13 +2,16 @@
   "id": "./",
   "name": "LJS Energies - Feuilles d'heures",
   "short_name": "LJS Heures",
-  "start_url": "./",
+  "description": "Feuilles d'heures LJS Energies",
+  "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0668a9",
+  "orientation": "any",
+  "prefer_related_applications": false,
   "icons": [
-    {"src":"./icon-192-v2.png?v=20260915-6","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"./icon-512-v2.png?v=20260915-6","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {"src":"./icon-192-v2.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./icon-512-v2.png","sizes":"512x512","type":"image/png","purpose":"any"}
   ]
 }
