@@ -9,12 +9,17 @@ async function showWeek() {
   await loadSheet(mondayOfWeekValue(weekInput.value));
   renderWeek();
 }
+function vehicleDisplayLabel(v) {
+  const brand=String(v?.brand||'').trim();
+  const registration=String(v?.registration||'').trim();
+  return brand ? `${brand.toUpperCase()} — ${registration}` : registration;
+}
 function renderWeek() {
   const s = state.sheet;
   const vehicle = document.getElementById('vehicleSelect');
   vehicle.innerHTML='';
   vehicle.add(new Option('— Aucun véhicule —',''));
-  state.vehicles.filter(v=>v.active !== false || v.id===s.vehicle_id).forEach(v=>vehicle.add(new Option(v.registration,v.id)));
+  state.vehicles.filter(v=>!v.deleted && (v.active !== false || v.id===s.vehicle_id)).forEach(v=>vehicle.add(new Option(vehicleDisplayLabel(v),v.id)));
   if (s.vehicle_id && !state.vehicles.some(v=>v.id===s.vehicle_id)) vehicle.add(new Option('Véhicule historique',s.vehicle_id));
   vehicle.value = s.vehicle_id || '';
   const locked = s.status === 'submitted' || s.status === 'approved';
@@ -176,6 +181,12 @@ async function saveWeek(submit) {
   s.vehicle_id = document.getElementById('vehicleSelect').value || null;
   s.general_comment = document.getElementById('weekComment').value.trim();
   if (submit) {
+    const incompleteDays=s.days.slice(0,5).filter(d=>!d.absent && totalDay(d)<=0);
+    if(incompleteDays.length){
+      const labels=incompleteDays.map(d=>formatDayTitle(d.date)).join(', ');
+      alert(`Feuille incomplète : renseigne des heures ou coche « Absent » pour ${labels}.\n\nLe samedi est facultatif.`);
+      return;
+    }
     const total = totalWeek(s);
     if (total <= 0 && !s.days.some(d=>d.absent)) { alert('Impossible de valider une semaine sans aucune heure ni absence renseignée.'); return; }
     if (!s.technician_signature) { alert('Le technicien doit signer la feuille avant de la valider.'); return; }
