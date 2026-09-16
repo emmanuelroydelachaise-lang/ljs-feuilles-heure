@@ -89,12 +89,22 @@ function loadLeavePdfTools(){
   document.head.appendChild(pdf);
 }
 
+function loadLeaveNotifications(){
+  if(document.querySelector('script[data-leave-notifications]')) return;
+  const script=document.createElement('script');
+  script.src='./leave-notifications.js?v=20260916-leave-notify-1';
+  script.dataset.leaveNotifications='1';
+  script.async=false;
+  document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   applyUiLabels();
   installLeavePdfSignatureStyle();
   loadTechnicianAdminChanges();
   loadAdminArchiveNavigation();
   loadLeavePdfTools();
+  loadLeaveNotifications();
   const app=document.getElementById('app');
   if(!app) return;
   const observer=new MutationObserver(()=>applyUiLabels(app));
