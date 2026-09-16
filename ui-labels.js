@@ -38,13 +38,13 @@ function loadTechnicianAdminChanges(){
   if(!document.querySelector('link[data-tech-admin-changes]')){
     const link=document.createElement('link');
     link.rel='stylesheet';
-    link.href='./technician-admin-changes.css?v=20260916-tech-red-1';
+    link.href='./technician-admin-changes.css?v=20260916-tech-red-2';
     link.dataset.techAdminChanges='1';
     document.head.appendChild(link);
   }
   if(!document.querySelector('script[data-tech-admin-changes]')){
     const script=document.createElement('script');
-    script.src='./technician-admin-changes.js?v=20260916-tech-red-1';
+    script.src='./technician-admin-changes.js?v=20260916-tech-red-2';
     script.dataset.techAdminChanges='1';
     script.async=false;
     document.head.appendChild(script);
