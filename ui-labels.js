@@ -23,6 +23,13 @@ function installLeavePdfSignatureStyle(){
     .leave-pdf-responsible-signature-block{color:#111!important}
     .leave-pdf-responsible-name{display:none!important}
     .leave-pdf-red-signature{filter:none!important}
+
+    /* Mise en page PDF plus harmonieuse : bloc principal un peu plus bas */
+    .leave-pdf-title{margin-top:17mm!important}
+
+    /* Rappel et signatures remontés pour réduire le grand vide central */
+    .leave-pdf-reminder{bottom:64mm!important}
+    .leave-pdf-signatures{bottom:22mm!important}
   `;
   document.head.appendChild(style);
 }
@@ -57,7 +64,7 @@ function loadLeavePdfTools(){
   const loadButtons=()=>{
     if(document.querySelector('script[data-leave-pdf-buttons]')) return;
     const buttons=document.createElement('script');
-    buttons.src='./leave-pdf-buttons.js?v=20260916-leave-pdf-4';
+    buttons.src='./leave-pdf-buttons.js?v=20260916-leave-pdf-5';
     buttons.dataset.leavePdfButtons='1';
     buttons.async=false;
     document.head.appendChild(buttons);
@@ -75,7 +82,7 @@ function loadLeavePdfTools(){
   }
 
   pdf=document.createElement('script');
-  pdf.src='./leave-pdf.js?v=20260916-leave-pdf-4';
+  pdf.src='./leave-pdf.js?v=20260916-leave-pdf-5';
   pdf.dataset.leavePdf='1';
   pdf.async=false;
   pdf.addEventListener('load',loadButtons,{once:true});
