@@ -4,6 +4,17 @@ function applyShortAbsentLabels(root=document){
   });
 }
 
+function applyZonePlaceholderLabels(root=document){
+  root.querySelectorAll('select.zone option[value="0"], select.admin-zone option[value="0"]').forEach(option=>{
+    option.textContent='Sélectionner zone';
+  });
+}
+
+function applyUiLabels(root=document){
+  applyShortAbsentLabels(root);
+  applyZonePlaceholderLabels(root);
+}
+
 function loadTechnicianAdminChanges(){
   if(!document.querySelector('link[data-tech-admin-changes]')){
     const link=document.createElement('link');
@@ -31,11 +42,11 @@ function loadAdminArchiveNavigation(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
-  applyShortAbsentLabels();
+  applyUiLabels();
   loadTechnicianAdminChanges();
   loadAdminArchiveNavigation();
   const app=document.getElementById('app');
   if(!app) return;
-  const observer=new MutationObserver(()=>applyShortAbsentLabels(app));
+  const observer=new MutationObserver(()=>applyUiLabels(app));
   observer.observe(app,{childList:true,subtree:true});
 });
