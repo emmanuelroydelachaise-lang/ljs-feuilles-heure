@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260916-pwa-20';
+  const VERSION = '20260916-pwa-21';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
