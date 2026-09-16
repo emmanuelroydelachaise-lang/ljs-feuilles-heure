@@ -6,6 +6,13 @@ renderAdminProjects = async function() {
   if(!box) return;
   box.innerHTML='';
 
+  // L'espace « Techniciens » correspond à la gestion du personnel autorisé à saisir
+  // des feuilles d'heures. L'administration peut déjà ajouter, modifier, retirer
+  // ou réactiver ces personnes depuis cet écran.
+  const personnelCard=document.getElementById('adminTechnicians')?.closest('.card');
+  const personnelTitle=personnelCard?.querySelector('h2');
+  if(personnelTitle) personnelTitle.textContent='Personnel / techniciens';
+
   let projects=[];
   if(!isCloud){
     projects=(demoDb().projects||[]).filter(p=>p.active!==false);
@@ -88,3 +95,17 @@ renderAdminProjects = async function() {
     box.append(el);
   });
 };
+
+// Le module véhicules existait déjà dans le dépôt mais n'était pas chargé par
+// l'application. On le charge ici pour l'intégrer à l'espace responsable sans
+// modifier la structure générale de l'application.
+(function loadAdminVehiclesModule(){
+  if(window.__ljsAdminVehiclesLoaded) return;
+  window.__ljsAdminVehiclesLoaded=true;
+  if(document.querySelector('script[data-ljs-admin-vehicles]')) return;
+  const script=document.createElement('script');
+  script.src='./admin-vehicles.js?v=20260916-admin-management-1';
+  script.async=false;
+  script.dataset.ljsAdminVehicles='1';
+  document.head.appendChild(script);
+})();
