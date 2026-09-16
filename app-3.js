@@ -8,7 +8,147 @@ async function showWeek() {
   weekInput.onchange = async () => { await loadSheet(mondayOfWeekValue(weekInput.value)); renderWeek(); };
   await loadSheet(mondayOfWeekValue(weekInput.value));
   renderWeek();
+  installTechnicianArchives();
 }
+
+function installTechnicianArchives() {
+  if (document.getElementById('technicianTabs')) return;
+  const toolbar = document.querySelector('.toolbar.card');
+  if (!toolbar) return;
+
+  const tabs = document.createElement('section');
+  tabs.id = 'technicianTabs';
+  tabs.className = 'tech-tabs';
+  tabs.innerHTML = `
+    <button id="techSheetTab" class="tech-tab active" type="button">Feuille d’heures</button>
+    <button id="techArchivesTab" class="tech-tab" type="button">Archives</button>`;
+
+  const panel = document.createElement('section');
+  panel.id = 'technicianArchivesPanel';
+  panel.className = 'card hidden';
+  panel.innerHTML = `
+    <div class="tech-archives-head">
+      <div>
+        <h2>Mes archives</h2>
+        <p class="hint">Feuilles validées par le responsable. Elles sont conservées en lecture seule.</p>
+      </div>
+    </div>
+    <div id="technicianArchivesList" class="stack"></div>`;
+
+  toolbar.insertAdjacentElement('afterend', tabs);
+  tabs.insertAdjacentElement('afterend', panel);
+
+  document.getElementById('techSheetTab').onclick = () => showTechnicianSheetView();
+  document.getElementById('techArchivesTab').onclick = () => showTechnicianArchivesView();
+}
+
+function technicianSheetSections() {
+  return [
+    document.querySelector('.week-head'),
+    document.getElementById('days'),
+    document.getElementById('weekComment')?.closest('.card'),
+    document.querySelector('.signature-card'),
+    document.querySelector('.actions.three-actions')
+  ].filter(Boolean);
+}
+
+function showTechnicianSheetView() {
+  technicianSheetSections().forEach(el => el.classList.remove('hidden'));
+  document.getElementById('technicianArchivesPanel')?.classList.add('hidden');
+  document.getElementById('techSheetTab')?.classList.add('active');
+  document.getElementById('techArchivesTab')?.classList.remove('active');
+}
+
+async function showTechnicianArchivesView() {
+  technicianSheetSections().forEach(el => el.classList.add('hidden'));
+  document.getElementById('technicianArchivesPanel')?.classList.remove('hidden');
+  document.getElementById('techSheetTab')?.classList.remove('active');
+  document.getElementById('techArchivesTab')?.classList.add('active');
+  await renderTechnicianArchives();
+}
+
+function formatArchiveDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function archiveWeekPeriod(weekStart) {
+  const monday = new Date(weekStart + 'T12:00:00');
+  const saturday = new Date(monday);
+  saturday.setDate(monday.getDate() + 5);
+  const fmt = d => d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  return `${fmt(monday)} au ${fmt(saturday)}`;
+}
+
+async function getTechnicianApprovedSheets() {
+  if (!isCloud) {
+    return (demoDb().sheets || [])
+      .filter(s => s.technician_id === currentProfile.id && s.status === 'approved')
+      .sort((a,b) => String(b.week_start).localeCompare(String(a.week_start)));
+  }
+  const { data, error } = await sb
+    .from('ljs_timesheets')
+    .select('id,week_start,status,approved_at')
+    .eq('technician_id', currentProfile.id)
+    .eq('status', 'approved')
+    .order('week_start', { ascending:false });
+  if (error) throw error;
+  return data || [];
+}
+
+async function renderTechnicianArchives() {
+  const box = document.getElementById('technicianArchivesList');
+  const tab = document.getElementById('techArchivesTab');
+  if (!box) return;
+  box.innerHTML = '<p class="hint">Chargement des archives…</p>';
+
+  try {
+    const sheets = await getTechnicianApprovedSheets();
+    if (tab) tab.textContent = sheets.length ? `Archives (${sheets.length})` : 'Archives';
+    box.innerHTML = '';
+
+    if (!sheets.length) {
+      box.innerHTML = '<p class="hint">Aucune feuille validée par le responsable pour le moment.</p>';
+      return;
+    }
+
+    sheets.forEach(sheet => {
+      const row = document.createElement('div');
+      row.className = 'tech-archive-item';
+      const approved = formatArchiveDate(sheet.approved_at);
+      row.innerHTML = `
+        <div class="tech-archive-summary">
+          <strong>Semaine ${weekNumber(sheet.week_start)} — ${archiveWeekPeriod(sheet.week_start)}</strong>
+          <div class="meta">Validée par le responsable${approved ? ` le ${approved}` : ''}</div>
+        </div>
+        <button class="secondary tech-open-archive" type="button">Ouvrir</button>`;
+
+      row.querySelector('.tech-open-archive').onclick = async event => {
+        const btn = event.currentTarget;
+        btn.disabled = true;
+        btn.textContent = 'Ouverture…';
+        try {
+          await loadSheet(sheet.week_start);
+          const weekInput = document.getElementById('weekInput');
+          if (weekInput) weekInput.value = weekValueFromMonday(sheet.week_start);
+          showTechnicianSheetView();
+          renderWeek();
+          window.scrollTo({ top:0, behavior:'smooth' });
+        } catch (error) {
+          alert('Impossible d’ouvrir cette archive : ' + (error.message || error));
+          btn.disabled = false;
+          btn.textContent = 'Ouvrir';
+        }
+      };
+      box.appendChild(row);
+    });
+  } catch (error) {
+    box.innerHTML = `<p class="error">Impossible de charger les archives : ${esc(error.message || error)}</p>`;
+  }
+}
+
 function vehicleDisplayLabel(v) {
   const brand=String(v?.brand||'').trim();
   const registration=String(v?.registration||'').trim();
