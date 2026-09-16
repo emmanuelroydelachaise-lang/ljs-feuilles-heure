@@ -83,18 +83,79 @@
     }
   }
 
+  function askResponsiblePinMasked() {
+    return new Promise(resolve => {
+      document.getElementById('archiveDeletePinOverlay')?.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'archiveDeletePinOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+
+      const dialog = document.createElement('div');
+      dialog.style.cssText = 'width:min(420px,100%);background:#fff;border-radius:16px;padding:22px;box-shadow:0 22px 60px rgba(0,0,0,.28);font-family:inherit;';
+      dialog.innerHTML = `
+        <h3 style="margin:0 0 8px;font-size:20px">Code responsable</h3>
+        <p style="margin:0 0 16px;color:#667085">Saisis ton code pour autoriser la suppression définitive de cette feuille.</p>
+        <input id="archiveDeletePinInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off" pattern="[0-9]*" placeholder="••••" style="width:100%;font-size:24px;letter-spacing:10px;text-align:center;padding:12px;border:1px solid #d0d5dd;border-radius:10px;box-sizing:border-box" />
+        <p id="archiveDeletePinError" style="min-height:20px;margin:8px 0 0;color:#b42318;font-size:14px"></p>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px">
+          <button id="archiveDeletePinCancel" type="button" class="secondary">Annuler</button>
+          <button id="archiveDeletePinConfirm" type="button" class="primary">Continuer</button>
+        </div>`;
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      const input = dialog.querySelector('#archiveDeletePinInput');
+      const error = dialog.querySelector('#archiveDeletePinError');
+      const cancel = dialog.querySelector('#archiveDeletePinCancel');
+      const confirmButton = dialog.querySelector('#archiveDeletePinConfirm');
+      let finished = false;
+
+      const close = value => {
+        if (finished) return;
+        finished = true;
+        document.removeEventListener('keydown', onKeyDown, true);
+        overlay.remove();
+        resolve(value);
+      };
+
+      const submit = () => {
+        const pin = String(input.value || '').trim();
+        if (!/^\d{4}$/.test(pin)) {
+          error.textContent = 'Le code responsable doit contenir 4 chiffres.';
+          input.focus();
+          input.select();
+          return;
+        }
+        close(pin);
+      };
+
+      const onKeyDown = event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          close(null);
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          submit();
+        }
+      };
+
+      cancel.onclick = () => close(null);
+      confirmButton.onclick = submit;
+      overlay.addEventListener('click', event => { if (event.target === overlay) close(null); });
+      document.addEventListener('keydown', onKeyDown, true);
+      setTimeout(() => input.focus(), 0);
+    });
+  }
+
   async function verifyResponsiblePinForArchiveDelete() {
-    const pin = prompt('Code responsable requis pour supprimer définitivement cette feuille :');
+    const pin = await askResponsiblePinMasked();
     if (pin === null) return false;
-    if (!/^\d{4}$/.test(pin.trim())) {
-      alert('Le code responsable doit contenir 4 chiffres.');
-      return false;
-    }
     if (typeof window.verifyResponsiblePinEntry !== 'function') {
       alert('La vérification du code responsable n’est pas disponible. Reconnecte-toi à l’accès responsable puis réessaie.');
       return false;
     }
-    const ok = await window.verifyResponsiblePinEntry(pin.trim());
+    const ok = await window.verifyResponsiblePinEntry(pin);
     if (!ok) alert('Code responsable incorrect.');
     return ok;
   }
