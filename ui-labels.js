@@ -41,10 +41,40 @@ function loadAdminArchiveNavigation(){
   document.head.appendChild(script);
 }
 
+function loadLeavePdfTools(){
+  const loadButtons=()=>{
+    if(document.querySelector('script[data-leave-pdf-buttons]')) return;
+    const buttons=document.createElement('script');
+    buttons.src='./leave-pdf-buttons.js?v=20260916-leave-pdf-3';
+    buttons.dataset.leavePdfButtons='1';
+    buttons.async=false;
+    document.head.appendChild(buttons);
+  };
+
+  if(window.downloadLeaveRequestPdf){
+    loadButtons();
+    return;
+  }
+
+  let pdf=document.querySelector('script[data-leave-pdf]');
+  if(pdf){
+    pdf.addEventListener('load',loadButtons,{once:true});
+    return;
+  }
+
+  pdf=document.createElement('script');
+  pdf.src='./leave-pdf.js?v=20260916-leave-pdf-3';
+  pdf.dataset.leavePdf='1';
+  pdf.async=false;
+  pdf.addEventListener('load',loadButtons,{once:true});
+  document.head.appendChild(pdf);
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   applyUiLabels();
   loadTechnicianAdminChanges();
   loadAdminArchiveNavigation();
+  loadLeavePdfTools();
   const app=document.getElementById('app');
   if(!app) return;
   const observer=new MutationObserver(()=>applyUiLabels(app));
