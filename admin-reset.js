@@ -73,12 +73,23 @@ function loadTimesheetNotifications(){
   document.head.appendChild(script);
 }
 
+function loadLeaveDeletePinMask(){
+  if(document.querySelector('script[data-leave-delete-pin-mask]')) return;
+  const script=document.createElement('script');
+  script.src='./leave-delete-pin-mask.js?v=20260916-leave-delete-pin-1';
+  script.async=false;
+  script.dataset.leaveDeletePinMask='1';
+  document.head.appendChild(script);
+}
+
 loadProjectPrintCorrection();
 loadTimesheetNotifications();
+loadLeaveDeletePinMask();
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadProjectPrintCorrection();
   loadTimesheetNotifications();
+  loadLeaveDeletePinMask();
   const app=document.getElementById('app');
   if(!app) return;
   const observer=new MutationObserver(()=>enhanceAdminResetButtons());
