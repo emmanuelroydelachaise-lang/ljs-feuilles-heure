@@ -3,6 +3,7 @@
   let pollTimer = null;
   let busy = false;
   let initializedFor = null;
+  let activeTechId = null;
 
   function installStyle() {
     if (document.getElementById('timesheetNotificationStyle')) return;
@@ -68,7 +69,6 @@
     if (!badge) {
       badge = document.createElement('span');
       badge.className = 'timesheet-notification-badge';
-      badge.setAttribute('aria-label', `${count} nouvelle${count > 1 ? 's' : ''} feuille${count > 1 ? 's' : ''} validée${count > 1 ? 's' : ''}`);
       tab.appendChild(badge);
     }
     badge.textContent = String(count);
@@ -137,23 +137,29 @@
   }
 
   function installForTechnician() {
-    if (!technicianId() || !document.getElementById('techArchivesTab')) return false;
+    const id = technicianId();
+    if (!id || !document.getElementById('techArchivesTab')) return false;
     installArchiveClickHandler();
-    refreshNotifications({ initialize:true });
-    startPolling();
+
+    if (activeTechId !== id) {
+      activeTechId = id;
+      refreshNotifications({ initialize:true });
+      startPolling();
+    } else {
+      refreshNotifications();
+      if (!pollTimer) startPolling();
+    }
     return true;
   }
 
   installStyle();
-  const observer = new MutationObserver(() => {
-    if (installForTechnician()) observer.disconnect();
-  });
+  const observer = new MutationObserver(() => installForTechnician());
   const app = document.getElementById('app');
   if (app) observer.observe(app, { childList:true, subtree:true });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      installArchiveClickHandler();
+      installForTechnician();
       refreshNotifications({ pulse:true });
     }
   });
