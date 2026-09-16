@@ -1,5 +1,8 @@
 (() => {
   let dashboardRenderToken = 0;
+  let dashboardBusy = false;
+
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
   function weekLabel(weekStart) {
     try {
@@ -31,10 +34,12 @@
           <h2>Tableau de bord</h2>
           <p id="dashboardWeekLabel" class="hint"></p>
         </div>
+        <button id="exportGroupedPdfBtn" class="secondary dashboard-export-pdf" type="button">Export PDF groupé</button>
       </div>
       <div id="adminDashboardGrid" class="admin-dashboard-grid"></div>
       <div id="adminDashboardDetails" class="dashboard-details hidden"></div>`;
     listCard.insertAdjacentElement('beforebegin', card);
+    card.querySelector('#exportGroupedPdfBtn').onclick = exportApprovedWeekPdf;
     return card;
   }
 
@@ -68,6 +73,97 @@
       <div class="dashboard-details-head"><strong>${esc(title)}</strong><span class="small muted">${names.length} technicien${names.length>1?'s':''}</span></div>
       ${names.length ? `<div class="dashboard-name-list">${names.map(name=>`<span class="dashboard-name">${esc(name)}</span>`).join('')}</div>` : '<p class="dashboard-empty">Aucun technicien dans cette catégorie.</p>'}`;
     box.classList.remove('hidden');
+  }
+
+  async function waitForImages(root) {
+    const images = [...root.querySelectorAll('img')];
+    await Promise.all(images.map(img => new Promise(resolve => {
+      const finish = async () => {
+        try { if (img.decode) await img.decode(); } catch (_) {}
+        resolve();
+      };
+      if (img.complete) { finish(); return; }
+      img.addEventListener('load', finish, { once:true });
+      img.addEventListener('error', finish, { once:true });
+    })));
+  }
+
+  async function exportApprovedWeekPdf() {
+    if (dashboardBusy) return;
+    const weekInput = document.getElementById('adminWeekInput');
+    const btn = document.getElementById('exportGroupedPdfBtn');
+    const area = document.getElementById('printArea');
+    if (!weekInput || !area || typeof printTimesheet !== 'function' || typeof loadAdminSheet !== 'function') return;
+
+    const weekStart = mondayOfWeekValue(weekInput.value || currentWeekValue());
+    dashboardBusy = true;
+    const oldText = btn?.textContent || 'Export PDF groupé';
+    if (btn) { btn.disabled = true; btn.textContent = 'Préparation du PDF…'; }
+
+    const realPrint = window.print;
+    let cleaned = false;
+    let cleanupTimer = null;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      if (cleanupTimer) clearTimeout(cleanupTimer);
+      window.print = realPrint;
+      area.classList.remove('grouped-print-mode');
+      dashboardBusy = false;
+      if (btn) { btn.disabled = false; btn.textContent = oldText; }
+    };
+
+    try {
+      const summaries = (await getWeekSheets(weekStart)).filter(s => s.status === 'approved');
+      if (!summaries.length) {
+        alert('Aucune feuille validée par le responsable pour cette semaine.');
+        cleanup();
+        return;
+      }
+
+      await loadReferenceData(true);
+
+      // Empêche les impressions individuelles programmées par printTimesheet pendant la construction.
+      window.print = () => {};
+      const pages = [];
+      const fullSheets = [];
+
+      for (const summary of summaries) {
+        const tech = (state.technicians || []).find(t => t.id === summary.technician_id);
+        const full = await loadAdminSheet(summary.id, tech?.full_name || '');
+        fullSheets.push(full);
+      }
+
+      fullSheets.sort((a,b) => String(a.technician_name||'').localeCompare(String(b.technician_name||''), 'fr'));
+
+      for (const sheet of fullSheets) {
+        printTimesheet(sheet, sheet.technician_name || 'Technicien');
+        await wait(40);
+        const page = area.querySelector('.exact-print-sheet');
+        if (!page) throw new Error('Impossible de préparer une des feuilles.');
+        pages.push(page.outerHTML);
+      }
+
+      // Laisse finir les appels d'impression individuels, toujours neutralisés.
+      await wait(650);
+      area.innerHTML = pages.join('');
+      area.classList.add('grouped-print-mode');
+
+      await waitForImages(area);
+      try { if (document.fonts?.ready) await document.fonts.ready; } catch (_) {}
+      await wait(350);
+
+      const afterPrint = () => cleanup();
+      window.addEventListener('afterprint', afterPrint, { once:true });
+      cleanupTimer = setTimeout(cleanup, 30000);
+
+      // Appelle directement le mécanisme d'impression fiable enregistré avant la neutralisation.
+      realPrint();
+    } catch (error) {
+      console.error(error);
+      cleanup();
+      alert('Impossible de préparer le PDF groupé : ' + (error.message || error));
+    }
   }
 
   async function renderAdminDashboard() {
@@ -149,4 +245,5 @@
   }, 120);
 
   window.renderAdminDashboard = renderAdminDashboard;
+  window.exportApprovedWeekPdf = exportApprovedWeekPdf;
 })();
