@@ -286,7 +286,8 @@
         try {
           const result = await baseSaveWeek.apply(this, arguments);
           const message = document.getElementById('saveMsg')?.textContent || '';
-          if (sheet?.id && !message.startsWith('Erreur')) {
+          const saved = message === 'Enregistré.' || message === 'Semaine signée, validée et verrouillée.';
+          if (sheet?.id && saved) {
             try {
               await persistAbsenceTypes(sheet);
             } catch (error) {
@@ -312,7 +313,8 @@
         (sheet?.days || []).forEach(day => syncDayFlags(day));
         const result = await baseSaveAdminSheet.apply(this, arguments);
         const message = document.getElementById('adminSaveMsg')?.textContent || '';
-        if (sheet?.id && !message.startsWith('Erreur')) {
+        const saved = message === 'Corrections enregistrées.' || message === 'Feuille validée par le responsable.';
+        if (sheet?.id && saved) {
           try {
             await persistAbsenceTypes(sheet);
           } catch (error) {
