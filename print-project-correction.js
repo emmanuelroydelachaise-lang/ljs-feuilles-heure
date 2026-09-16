@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260916-project-print-fix-1';
+  const VERSION = '20260916-project-print-fix-2';
 
   const changed = (sheet, path) => Array.isArray(sheet?.admin_changes) && sheet.admin_changes.includes(path);
 
@@ -56,10 +56,20 @@
         .p-project-name .rch-project-header-pair{font-size:4.4pt!important}
         .p-project-code .rch-project-header-pair{font-size:5.2pt!important}
         .p-project-vertical .rch-project-header-pair span{display:inline!important;transform:none!important;max-width:none!important;white-space:nowrap!important}
-        .rch-project-header-old{color:#555!important;text-decoration:line-through!important;text-decoration-thickness:.35mm!important;font-weight:700!important}
-        .rch-project-header-new{color:#d40000!important;font-weight:900!important}
+        .rch-project-header-old,.rch-print-old-fix,.rch-print-old{color:#555!important;text-decoration:line-through!important;text-decoration-thickness:.35mm!important;font-weight:700!important}
+        .rch-project-header-new,.rch-print-new-fix,.rch-print-new{color:#d40000!important;font-weight:900!important}
         .rch-project-header-arrow{color:#777!important;font-weight:700!important}
       }
+      .ljs-pdf-stage .p-project-vertical.rch-project-header-corrected{overflow:visible!important;color:#000!important}
+      .ljs-pdf-stage .p-project-vertical .rch-project-header-pair{display:flex!important;align-items:center!important;justify-content:center!important;gap:.8mm!important;white-space:nowrap!important;transform:rotate(-90deg)!important;transform-origin:center center!important;max-width:none!important;line-height:1!important}
+      .ljs-pdf-stage .p-project-name .rch-project-header-pair{font-size:4.4pt!important}
+      .ljs-pdf-stage .p-project-code .rch-project-header-pair{font-size:5.2pt!important}
+      .ljs-pdf-stage .p-project-vertical .rch-project-header-pair span{display:inline!important;transform:none!important;max-width:none!important;white-space:nowrap!important;background:#fff!important;padding:0!important}
+      .ljs-pdf-stage .rch-project-header-old,.ljs-pdf-stage .rch-print-old-fix,.ljs-pdf-stage .rch-print-old{color:#555!important;text-decoration:line-through!important;text-decoration-thickness:.35mm!important;font-weight:700!important}
+      .ljs-pdf-stage .rch-project-header-new,.ljs-pdf-stage .rch-print-new-fix,.ljs-pdf-stage .rch-print-new{color:#d40000!important;font-weight:900!important}
+      .ljs-pdf-stage .rch-project-header-arrow{color:#777!important;font-weight:700!important}
+      .ljs-pdf-stage .rch-print-pair{width:100%;height:100%;display:flex!important;gap:1mm;align-items:center;justify-content:center;flex-wrap:wrap;background:#fff;padding:.2mm;box-sizing:border-box;line-height:1}
+      .ljs-pdf-stage .rch-print-note{display:block;width:100%;font-size:6pt;line-height:1.15;margin-bottom:.5mm}
     `;
     document.head.appendChild(style);
   }
