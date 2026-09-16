@@ -84,6 +84,76 @@
     });
   }
 
+  function recapVehicleLabel(sheet) {
+    if (!sheet?.vehicle_id) return 'Aucun véhicule';
+    const vehicle = (state?.vehicles || []).find(v => v.id === sheet.vehicle_id);
+    if (!vehicle) return 'Véhicule historique';
+    const brand = String(vehicle.brand || '').trim();
+    const registration = String(vehicle.registration || '').trim();
+    return brand ? `${brand.toUpperCase()} — ${registration}` : (registration || 'Véhicule sélectionné');
+  }
+
+  function recapProjectLabel(entry) {
+    if (entry.project_id === OTHER_PROJECT_ID) {
+      const code = String(entry.manual_project_code || '').trim();
+      const name = String(entry.manual_project_name || '').trim() || 'Chantier autre';
+      return code ? `${code} — ${name}` : name;
+    }
+    const project = (state?.projects || []).find(p => p.id === entry.project_id);
+    if (!project) return 'Chantier';
+    const code = String(project.code || '').trim();
+    const name = String(project.name || '').trim();
+    return code && name ? `${code} — ${name}` : (name || code || 'Chantier');
+  }
+
+  function buildSubmissionRecap(sheet) {
+    const days = (sheet.days || []).slice(0, 6);
+    const projectTotals = new Map();
+
+    days.forEach(day => {
+      if (day.absent) return;
+      (day.entries || []).forEach(entry => {
+        const hours = Number(entry.hours || 0);
+        if (hours <= 0 || !entry.project_id) return;
+        const label = recapProjectLabel(entry);
+        projectTotals.set(label, (projectTotals.get(label) || 0) + hours);
+      });
+    });
+
+    const dayLines = days.map(day => {
+      const label = String(day.name || weekdayLabel(day)).replace(/^./, c => c.toUpperCase());
+      if (day.absent) return `• ${label} : ABSENT`;
+      const hours = totalDay(day);
+      if (hours <= 0) return `• ${label} : non travaillé`;
+      return `• ${label} : ${fmtHours(hours)} — Zone ${Number(day.zone || 0)}`;
+    });
+
+    const projectLines = [...projectTotals.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0], 'fr'))
+      .map(([label, hours]) => `• ${label} : ${fmtHours(hours)}`);
+
+    const weekNo = typeof weekNumber === 'function' ? weekNumber(sheet.week_start) : '';
+    const header = weekNo ? `Semaine ${weekNo}` : 'Semaine';
+
+    return [
+      'RÉCAPITULATIF AVANT VALIDATION',
+      '',
+      `${header} — ${currentProfile?.full_name || 'Technicien'}`,
+      `TOTAL : ${fmtHours(totalWeek(sheet))}`,
+      `Véhicule : ${recapVehicleLabel(sheet)}`,
+      '',
+      'JOURNÉES',
+      ...dayLines,
+      '',
+      'CHANTIERS',
+      ...(projectLines.length ? projectLines : ['• Aucun chantier']),
+      '',
+      'Après confirmation, la feuille sera envoyée au responsable et verrouillée.',
+      '',
+      'Confirmer la signature et la validation de la semaine ?'
+    ].join('\n');
+  }
+
   function installSubmissionGuard() {
     const baseSaveWeek = window.saveWeek;
     if (typeof baseSaveWeek !== 'function' || baseSaveWeek.__ljsCompleteGuard) return false;
@@ -96,6 +166,9 @@
         const missingProjects = weekdays.filter(day =>
           !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && !entry.project_id)
         );
+        const invalidOther = state.sheet.days.some(day =>
+          !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && entry.project_id === OTHER_PROJECT_ID && !String(entry.manual_project_name || '').trim())
+        );
 
         if (missingHours.length || missingZones.length || missingProjects.length) {
           const lines = ['Feuille incomplète :'];
@@ -105,6 +178,32 @@
           lines.push('', 'Complète les éléments indiqués avant de valider. Le samedi est facultatif.');
           alert(lines.join('\n'));
           return;
+        }
+
+        if (invalidOther) {
+          alert('Pour « Chantier autre », renseigne le nom du chantier ou de l’intervention.');
+          return;
+        }
+
+        if (state.sheet.technician_signature) {
+          const originalConfirm = window.confirm;
+          if (!originalConfirm(buildSubmissionRecap(state.sheet))) return;
+
+          let legacyConfirmPending = true;
+          window.confirm = function(message) {
+            const text = String(message || '');
+            if (legacyConfirmPending && text.startsWith('Signer et valider définitivement cette semaine')) {
+              legacyConfirmPending = false;
+              return true;
+            }
+            return originalConfirm(message);
+          };
+
+          try {
+            return await baseSaveWeek.apply(this, arguments);
+          } finally {
+            window.confirm = originalConfirm;
+          }
         }
       }
       return baseSaveWeek.apply(this, arguments);
