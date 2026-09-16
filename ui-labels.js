@@ -15,6 +15,18 @@ function applyUiLabels(root=document){
   applyZonePlaceholderLabels(root);
 }
 
+function installLeavePdfSignatureStyle(){
+  if(document.getElementById('leavePdfSignatureStyleFix')) return;
+  const style=document.createElement('style');
+  style.id='leavePdfSignatureStyleFix';
+  style.textContent=`
+    .leave-pdf-responsible-signature-block{color:#111!important}
+    .leave-pdf-responsible-name{display:none!important}
+    .leave-pdf-red-signature{filter:none!important}
+  `;
+  document.head.appendChild(style);
+}
+
 function loadTechnicianAdminChanges(){
   if(!document.querySelector('link[data-tech-admin-changes]')){
     const link=document.createElement('link');
@@ -45,7 +57,7 @@ function loadLeavePdfTools(){
   const loadButtons=()=>{
     if(document.querySelector('script[data-leave-pdf-buttons]')) return;
     const buttons=document.createElement('script');
-    buttons.src='./leave-pdf-buttons.js?v=20260916-leave-pdf-3';
+    buttons.src='./leave-pdf-buttons.js?v=20260916-leave-pdf-4';
     buttons.dataset.leavePdfButtons='1';
     buttons.async=false;
     document.head.appendChild(buttons);
@@ -63,7 +75,7 @@ function loadLeavePdfTools(){
   }
 
   pdf=document.createElement('script');
-  pdf.src='./leave-pdf.js?v=20260916-leave-pdf-3';
+  pdf.src='./leave-pdf.js?v=20260916-leave-pdf-4';
   pdf.dataset.leavePdf='1';
   pdf.async=false;
   pdf.addEventListener('load',loadButtons,{once:true});
@@ -72,6 +84,7 @@ function loadLeavePdfTools(){
 
 document.addEventListener('DOMContentLoaded',()=>{
   applyUiLabels();
+  installLeavePdfSignatureStyle();
   loadTechnicianAdminChanges();
   loadAdminArchiveNavigation();
   loadLeavePdfTools();
