@@ -34,7 +34,7 @@ function renderWeek() {
   document.getElementById('weekComment').oninput = e => { s.general_comment = e.target.value; };
   const days = document.getElementById('days');
   days.innerHTML='';
-  s.days.forEach((d, idx) => days.append(renderDay(d, idx, locked)));
+  s.days.slice(0,6).forEach((d, idx) => days.append(renderDay(d, idx, locked)));
   renderTechSignature(locked);
   updateTotals();
 }
