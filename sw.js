@@ -1,4 +1,4 @@
-const CACHE = 'ljs-heures-v41';
+const CACHE = 'ljs-heures-v42';
 const ASSETS = [
   './', './index.html', './styles.css', './print-vector.css', './print-fit.css', './admin-archives.css', './admin-dashboard.css', './technician-admin-changes.css', './technician-archives.css', './config.js',
   './app-1.js', './app-2.js', './app-3.js', './app-4.js', './app-5.js', './app-6.js',
