@@ -137,9 +137,13 @@
   }
 
   let attempts = 0;
+  let initialRendered = false;
   const timer = setInterval(() => {
     installRefreshWrapper();
-    if (document.getElementById('adminWeekInput')) renderAdminDashboard();
+    if (!initialRendered && document.getElementById('adminWeekInput')) {
+      initialRendered = true;
+      renderAdminDashboard();
+    }
     attempts += 1;
     if (attempts >= 30 && window.refreshAdmin?.__ljsDashboardWrapped) clearInterval(timer);
   }, 120);
