@@ -27,6 +27,23 @@ function getPrintProjects(sheet){
   sheet.days.forEach(d=>{if(d.absent)return;(d.entries||[]).forEach(e=>{if(Number(e.hours)>0 && e.project_id && (e.project_id!==OTHER_PROJECT_ID || String(e.manual_project_name||'').trim())){const desc=descriptorForEntry(e);if(!map.has(desc.key))map.set(desc.key,desc);}})});
   return [...map.values()].slice(0,18);
 }
+function formatPrintTime(totalMinutes){
+  const minutes=Math.max(0,Math.round(Number(totalMinutes)||0));
+  const h=Math.floor(minutes/60);
+  const m=minutes%60;
+  return `${h}h${String(m).padStart(2,'0')}`;
+}
+function effectiveHoursForDay(day){
+  if(day?.absent) return [];
+  const totalMinutes=Math.max(0,Math.round(Number(totalDay(day)||0)*60));
+  if(totalMinutes<=0) return [];
+  const lines=[];
+  const morningMinutes=Math.min(totalMinutes,4*60);
+  if(morningMinutes>0) lines.push(`8h00 à ${formatPrintTime(8*60+morningMinutes)}`);
+  const afternoonMinutes=Math.max(0,totalMinutes-4*60);
+  if(afternoonMinutes>0) lines.push(`13h30 à ${formatPrintTime(13*60+30+afternoonMinutes)}`);
+  return lines;
+}
 function printTimesheet(sheet, technicianName) {
   const s=normalizeSheet(deepClone(sheet),sheet.week_start);
   const projects=getPrintProjects(s);
@@ -72,11 +89,9 @@ function printTimesheet(sheet, technicianName) {
 
     const dt=totalDay(d);
     const dayHasHours=!d.absent && dt>0;
-    const expectedHours=di===4?7:8;
-    const hasStandardFullDay=!d.absent && Math.abs(dt-expectedHours)<0.001;
-    const afternoonEnd=di===4?'16h30':'17h30';
-    const effectiveHoursHtml=hasStandardFullDay
-      ? `<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2mm;font-size:6.2pt;font-weight:700;line-height:1.05;white-space:nowrap"><span>8h00 à 12h00</span><span>13h30 à ${afternoonEnd}</span></div>`
+    const effectiveLines=effectiveHoursForDay(d);
+    const effectiveHoursHtml=effectiveLines.length
+      ? `<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2mm;font-size:6.2pt;font-weight:700;line-height:1.05;white-space:nowrap">${effectiveLines.map(line=>`<span>${line}</span>`).join('')}</div>`
       : '<div style="width:100%;height:100%;background:#fff"></div>';
     overlay.push(box(2125,y1+1,2334,y2-1,'p-effective-hours',effectiveHoursHtml));
 
