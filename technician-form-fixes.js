@@ -7,72 +7,81 @@
     }
   }
 
-  function installProjectPlaceholder() {
-    if (typeof window.projectOptions === 'function' && !window.projectOptions.__ljsPlaceholder) {
-      const baseProjectOptions = window.projectOptions;
-      const wrappedProjectOptions = function(selected, allowInactive = false) {
-        const placeholder = `<option value="" ${!selected ? 'selected' : ''}>Sélectionner chantier</option>`;
-        return placeholder + baseProjectOptions.call(this, selected, allowInactive);
-      };
-      wrappedProjectOptions.__ljsPlaceholder = true;
-      window.projectOptions = wrappedProjectOptions;
-    }
-
-    if (typeof window.normalizeSheet === 'function' && !window.normalizeSheet.__ljsBlankProject) {
-      const baseNormalizeSheet = window.normalizeSheet;
-      const wrappedNormalizeSheet = function(...args) {
-        const sheet = baseNormalizeSheet.apply(this, args);
-        if (sheet?.status === 'draft' && Array.isArray(sheet.days)) {
-          sheet.days.forEach(day => {
-            (day.entries || []).forEach(entry => {
-              if (Number(entry.hours || 0) <= 0 && !String(entry.manual_project_name || '').trim()) {
-                entry.project_id = '';
-              }
-            });
-          });
-        }
-        return sheet;
-      };
-      wrappedNormalizeSheet.__ljsBlankProject = true;
-      window.normalizeSheet = wrappedNormalizeSheet;
-    }
-  }
-
-  function clearAutomaticProjectSelections() {
-    if (state?.sheet?.status && state.sheet.status !== 'draft') return;
+  function ensureSelectPlaceholders() {
     const cards = [...document.querySelectorAll('#days .day-card')];
     cards.forEach((card, dayIndex) => {
       const day = state?.sheet?.days?.[dayIndex];
-      if (!day || day.absent) return;
+      if (!day) return;
+
+      const zone = card.querySelector('select.zone');
+      const zoneZero = zone?.querySelector('option[value="0"]');
+      if (zoneZero) zoneZero.textContent = 'Sélectionner zone';
+
       const rows = [...card.querySelectorAll('.work-row')];
       rows.forEach((row, entryIndex) => {
-        const hours = row.querySelector('.hours');
-        const select = row.querySelector('.project');
+        const select = row.querySelector('select.project');
         const entry = day.entries?.[entryIndex];
-        if (!hours || !select || !entry) return;
-        if (Number(hours.value || 0) > 0 || String(entry.manual_project_name || '').trim()) return;
-        if (entry.project_id && entry.project_id !== OTHER_PROJECT_ID) {
-          entry.project_id = '';
-          select.value = '';
+        if (!select || !entry) return;
+        if (!select.querySelector('option[value=""]')) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'Sélectionner chantier';
+          select.insertBefore(option, select.firstChild);
         }
+        select.value = entry.project_id || '';
       });
     });
   }
 
-  function installProjectUiGuard() {
-    if (document.documentElement.dataset.ljsProjectGuard === '1') return;
-    document.documentElement.dataset.ljsProjectGuard = '1';
+  function clearAutomaticProjectsForNewSheet() {
+    const sheet = state?.sheet;
+    if (!sheet || sheet.status !== 'draft' || sheet.id) return;
+    (sheet.days || []).slice(0, 6).forEach(day => {
+      (day.entries || []).forEach(entry => {
+        if (Number(entry.hours || 0) <= 0 && !String(entry.manual_project_name || '').trim()) entry.project_id = '';
+      });
+    });
+  }
+
+  function installRenderWrapper() {
+    const baseRenderWeek = window.renderWeek;
+    if (typeof baseRenderWeek !== 'function' || baseRenderWeek.__ljsStablePlaceholders) return false;
+    const wrapped = function(...args) {
+      clearAutomaticProjectsForNewSheet();
+      const result = baseRenderWeek.apply(this, args);
+      ensureSelectPlaceholders();
+      return result;
+    };
+    wrapped.__ljsStablePlaceholders = true;
+    window.renderWeek = wrapped;
+    return true;
+  }
+
+  function installRowHandlers() {
+    if (document.documentElement.dataset.ljsStableRowHandlers === '1') return;
+    document.documentElement.dataset.ljsStableRowHandlers = '1';
 
     document.addEventListener('click', event => {
-      const button = event.target.closest?.('.add-row, .remove');
-      if (!button) return;
-      setTimeout(clearAutomaticProjectSelections, 0);
+      const add = event.target.closest?.('.add-row');
+      if (add) {
+        const card = add.closest('.day-card');
+        const cards = [...document.querySelectorAll('#days .day-card')];
+        const dayIndex = cards.indexOf(card);
+        setTimeout(() => {
+          const day = state?.sheet?.days?.[dayIndex];
+          const entry = day?.entries?.[day.entries.length - 1];
+          if (entry && Number(entry.hours || 0) <= 0) entry.project_id = '';
+          ensureSelectPlaceholders();
+        }, 0);
+        return;
+      }
+
+      if (event.target.closest?.('.remove')) setTimeout(ensureSelectPlaceholders, 0);
     });
 
-    const observer = new MutationObserver(() => {
-      if (document.getElementById('days')) setTimeout(clearAutomaticProjectSelections, 0);
+    document.addEventListener('change', event => {
+      if (event.target.matches?.('select.project, select.zone')) setTimeout(ensureSelectPlaceholders, 0);
     });
-    observer.observe(document.getElementById('app'), { childList: true, subtree: true });
   }
 
   function installSubmissionGuard() {
@@ -83,24 +92,16 @@
       if (submit && state?.sheet?.days) {
         const weekdays = state.sheet.days.slice(0, 5);
         const missingHours = weekdays.filter(day => !day.absent && totalDay(day) <= 0);
-        const missingZones = weekdays.filter(day =>
-          !day.absent && totalDay(day) > 0 && !(Number(day.zone) >= 1 && Number(day.zone) <= 5)
-        );
+        const missingZones = weekdays.filter(day => !day.absent && totalDay(day) > 0 && !(Number(day.zone) >= 1 && Number(day.zone) <= 5));
         const missingProjects = weekdays.filter(day =>
           !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && !entry.project_id)
         );
 
         if (missingHours.length || missingZones.length || missingProjects.length) {
           const lines = ['Feuille incomplète :'];
-          if (missingHours.length) {
-            lines.push(`• Heures non renseignées : ${missingHours.map(weekdayLabel).join(', ')}.`);
-          }
-          if (missingZones.length) {
-            lines.push(`• Zone trajet non renseignée : ${missingZones.map(weekdayLabel).join(', ')}.`);
-          }
-          if (missingProjects.length) {
-            lines.push(`• Chantier non sélectionné : ${missingProjects.map(weekdayLabel).join(', ')}.`);
-          }
+          if (missingHours.length) lines.push(`• Heures non renseignées : ${missingHours.map(weekdayLabel).join(', ')}.`);
+          if (missingZones.length) lines.push(`• Zone trajet non renseignée : ${missingZones.map(weekdayLabel).join(', ')}.`);
+          if (missingProjects.length) lines.push(`• Chantier non sélectionné : ${missingProjects.map(weekdayLabel).join(', ')}.`);
           lines.push('', 'Complète les éléments indiqués avant de valider. Le samedi est facultatif.');
           alert(lines.join('\n'));
           return;
@@ -135,14 +136,12 @@
     span.style.whiteSpace = 'nowrap';
     span.style.display = 'block';
     span.style.maxWidth = '100%';
-    span.style.overflow = 'visible';
   }
 
   function installPrintFix() {
     const basePrintTimesheet = window.printTimesheet;
     if (typeof basePrintTimesheet !== 'function' || basePrintTimesheet.__ljsVehicleBrandFix) return false;
-
-    const wrapped = function(sheet, technicianName) {
+    const wrapped = function(sheet) {
       const result = basePrintTimesheet.apply(this, arguments);
       const area = document.getElementById('printArea') || window.printArea;
       const fields = area ? [...area.querySelectorAll('.exact-print-sheet .p-field')] : [];
@@ -151,10 +150,8 @@
         const label = printedVehicleLabel(sheet);
         const span = fields[1].querySelector('span');
         if (span) span.textContent = label;
-        fields[1].classList.add('p-vehicle-label');
         fields[1].style.fontSize = label.length > 30 ? '5pt' : label.length > 24 ? '5.8pt' : '7pt';
         fields[1].style.whiteSpace = 'nowrap';
-        if (span) span.style.whiteSpace = 'nowrap';
       }
       return result;
     };
@@ -163,19 +160,8 @@
     return true;
   }
 
-  installProjectPlaceholder();
-  installProjectUiGuard();
-
-  let attempts = 0;
-  const timer = setInterval(() => {
-    installProjectPlaceholder();
-    const guardReady = installSubmissionGuard();
-    const printReady = installPrintFix();
-    attempts += 1;
-    if ((guardReady || window.saveWeek?.__ljsCompleteGuard) && (printReady || window.printTimesheet?.__ljsVehicleBrandFix) && window.projectOptions?.__ljsPlaceholder) {
-      clearInterval(timer);
-    } else if (attempts > 40) {
-      clearInterval(timer);
-    }
-  }, 100);
+  installRowHandlers();
+  installRenderWrapper();
+  installSubmissionGuard();
+  installPrintFix();
 })();
