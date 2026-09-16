@@ -38,15 +38,23 @@
     catch (_) { return; }
 
     rows.forEach((row, index) => {
-      if (row.querySelector('.tech-archive-pdf')) return;
       const summary = sheets[index];
       if (!summary) return;
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'secondary tech-archive-pdf';
+
+      row.querySelectorAll('button').forEach(button => {
+        if (!button.classList.contains('tech-archive-pdf')) button.remove();
+      });
+
+      let button = row.querySelector('.tech-archive-pdf');
+      if (!button) {
+        button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'secondary tech-archive-pdf';
+        row.appendChild(button);
+      }
       button.textContent = 'PDF';
+      button.title = 'Télécharger la feuille au format PDF';
       button.onclick = () => technicianPdf(summary, button);
-      row.appendChild(button);
     });
   }
 
@@ -102,12 +110,19 @@
       const rows = [...group.querySelectorAll('.archive-sheet-row')];
       rows.forEach((row, index) => {
         const sheet = groupSheets[index];
-        const button = row.querySelector('.archive-print');
-        if (!button || !sheet) return;
+        if (!sheet) return;
+
+        const actions = row.querySelector('.admin-row-actions');
+        if (!actions) return;
+        actions.innerHTML = '';
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'secondary archive-pdf-only';
         button.textContent = 'PDF';
         button.title = 'Télécharger la feuille au format PDF';
         button.onclick = () => adminPdf(sheet, name, button);
-        button.dataset.pdfReady = '1';
+        actions.appendChild(button);
       });
     });
   }
