@@ -255,3 +255,26 @@
 
   window.showLeaveRequestsView = showLeaveRequestsView;
 })();
+
+(() => {
+  const VERSION = '20260916-leave-pdf-1';
+  function loadButtons() {
+    if (document.querySelector('script[data-leave-pdf-buttons]')) return;
+    const buttons = document.createElement('script');
+    buttons.src = `./leave-pdf-buttons.js?v=${VERSION}`;
+    buttons.dataset.leavePdfButtons = '1';
+    buttons.async = false;
+    document.head.appendChild(buttons);
+  }
+  if (!document.querySelector('script[data-leave-pdf]')) {
+    const pdf = document.createElement('script');
+    pdf.src = `./leave-pdf.js?v=${VERSION}`;
+    pdf.dataset.leavePdf = '1';
+    pdf.async = false;
+    pdf.addEventListener('load', loadButtons, {once:true});
+    pdf.addEventListener('error', loadButtons, {once:true});
+    document.head.appendChild(pdf);
+  } else {
+    loadButtons();
+  }
+})();
