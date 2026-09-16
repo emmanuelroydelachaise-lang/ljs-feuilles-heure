@@ -61,12 +61,12 @@
   async function getAdminArchiveSheetsForPdf() {
     if (!isCloud) {
       const db = demoDb();
-      return (db.sheets || []).map(s => {
+      return (db.sheets || []).filter(s => s.status === 'approved').map(s => {
         const t = (db.technicians || []).find(x => x.id === s.technician_id);
         return { ...s, technician_name:t?.full_name || s.technician_id || 'Technicien' };
       });
     }
-    const { data, error } = await sb.from('ljs_timesheets_admin').select('*');
+    const { data, error } = await sb.from('ljs_timesheets_admin').select('*').eq('status', 'approved');
     if (error) throw error;
     return data || [];
   }
