@@ -6,7 +6,7 @@ function applyShortAbsentLabels(root=document){
 
 function applyZonePlaceholderLabels(root=document){
   root.querySelectorAll('select.zone option[value="0"], select.admin-zone option[value="0"]').forEach(option=>{
-    option.textContent='Sélectionner zone';
+    if(option.textContent.trim()!=='Sélectionner zone') option.textContent='Sélectionner zone';
   });
 }
 
