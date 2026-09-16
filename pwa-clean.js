@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260916-pwa-18';
+  const VERSION = '20260916-pwa-19';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
@@ -95,6 +95,34 @@
     script.dataset.technicianFormFixes = '1';
     script.async = false;
     document.head.appendChild(script);
+  }
+
+  function loadAbsenceTypes() {
+    if (document.querySelector('script[data-absence-types]')) return;
+    const install = () => {
+      if (document.querySelector('script[data-absence-types]')) return;
+      const script = document.createElement('script');
+      script.src = `./absence-types.js?v=${VERSION}`;
+      script.dataset.absenceTypes = '1';
+      script.async = false;
+      document.head.appendChild(script);
+    };
+
+    if (window.saveWeek?.__ljsCompleteGuard) {
+      install();
+      return;
+    }
+
+    const technicianFixes = document.querySelector('script[data-technician-form-fixes]');
+    if (technicianFixes) {
+      technicianFixes.addEventListener('load', install, { once:true });
+      technicianFixes.addEventListener('error', install, { once:true });
+      setTimeout(() => {
+        if (window.saveWeek?.__ljsCompleteGuard) install();
+      }, 250);
+      return;
+    }
+    install();
   }
 
   function loadAdminPinGuard() {
@@ -214,6 +242,7 @@
     loadPrintLogoFix();
     loadPrintReliabilityFixes();
     loadTechnicianFormFixes();
+    loadAbsenceTypes();
     loadAdminPinGuard();
     loadTechnicianState();
     loadAdminVehicles();
@@ -237,6 +266,7 @@
     loadPrintLogoFix();
     loadPrintReliabilityFixes();
     loadTechnicianFormFixes();
+    loadAbsenceTypes();
     loadAdminPinGuard();
     loadTechnicianState();
     loadAdminVehicles();
