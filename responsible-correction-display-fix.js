@@ -1,11 +1,12 @@
 (() => {
-  const FIX_VERSION = '20260916-history-fix-1';
+  const FIX_VERSION = '20260916-history-fix-2';
 
   const changed = (sheet, path) => Array.isArray(sheet?.admin_changes) && sheet.admin_changes.includes(path);
 
   function escFix(value='') {
-    if (typeof window.esc === 'function') return window.esc(value);
-    return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    return typeof esc === 'function'
+      ? esc(value)
+      : String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   function installStyles() {
@@ -51,12 +52,12 @@
   function projectParts(entry) {
     if (!entry) return { code:'', name:'—', text:'—' };
     const id = entry.project_id || '';
-    if (id === window.OTHER_PROJECT_ID || id === '__other__' || !id) {
+    if (id === OTHER_PROJECT_ID || id === '__other__' || !id) {
       const code = String(entry.manual_project_code || '').trim();
       const name = String(entry.manual_project_name || '').trim() || 'Chantier autre';
       return { code, name, text: code ? `${code} — ${name}` : name };
     }
-    const project = (window.state?.projects || []).find(p => p.id === id);
+    const project = (state?.projects || []).find(p => p.id === id);
     if (project) return { code:String(project.code || ''), name:String(project.name || ''), text:`${project.code} — ${project.name}` };
     return { code:'', name:'Chantier historique', text:'Chantier historique' };
   }
@@ -70,8 +71,7 @@
 
   function addFixedPair(host, oldValue, newValue, kind='') {
     if (!host) return;
-    const cls = kind ? `.rch-fixed-pair[data-kind="${kind}"]` : '.rch-fixed-pair';
-    host.querySelectorAll(`:scope > ${cls}`).forEach(el => el.remove());
+    [...host.children].filter(el => el.classList?.contains('rch-fixed-pair') && (!kind || el.dataset.kind === kind)).forEach(el => el.remove());
     const pair = document.createElement('div');
     pair.className = 'rch-fixed-pair';
     if (kind) pair.dataset.kind = kind;
@@ -84,16 +84,13 @@
     sheet.technician_original.days.forEach((oldDay, di) => {
       if (!oldDay || Object.prototype.hasOwnProperty.call(oldDay, 'absence_type')) return;
       const alreadyChanged = changed(sheet, `days.${di}.absence_type`) || changed(sheet, `days.${di}.absent`);
-      if (!alreadyChanged) {
-        oldDay.absence_type = absenceType(sheet.days[di]);
-      } else {
-        oldDay.absence_type = oldDay.absent ? 'absent' : '';
-      }
+      if (!alreadyChanged) oldDay.absence_type = absenceType(sheet.days[di]);
+      else oldDay.absence_type = oldDay.absent ? 'absent' : '';
     });
   }
 
   function decorateEditor() {
-    const sheet = window.state?.adminSheet;
+    const sheet = state?.adminSheet;
     const root = document.getElementById('adminEditor');
     if (!sheet || !root || root.classList.contains('hidden') || !sheet.technician_original) return;
 
@@ -129,7 +126,7 @@
   }
 
   function decorateTechnician() {
-    const sheet = window.state?.sheet;
+    const sheet = state?.sheet;
     const root = document.getElementById('app');
     if (!sheet || sheet.status !== 'approved' || !sheet.technician_original || !root) return;
 
@@ -166,8 +163,8 @@
   function decoratePrint(sheet) {
     const root = document.querySelector('#printArea .exact-print-sheet');
     if (!root || !sheet?.technician_original) return;
-    const current = typeof window.normalizeSheet === 'function'
-      ? window.normalizeSheet(window.deepClone ? window.deepClone(sheet) : JSON.parse(JSON.stringify(sheet)), sheet.week_start)
+    const current = typeof normalizeSheet === 'function'
+      ? normalizeSheet(typeof deepClone === 'function' ? deepClone(sheet) : JSON.parse(JSON.stringify(sheet)), sheet.week_start)
       : sheet;
 
     const absentEls = [...root.querySelectorAll('.p-absent')];
@@ -182,7 +179,6 @@
       el.innerHTML = `<span class="rch-print-old-fix">${escFix(absenceLabel(oldDay))}</span>&nbsp;&nbsp;<span class="rch-print-new-fix">${escFix(absenceLabel(newDay))}</span>`;
     });
 
-    // Renforce également la trace du changement de chantier dans la zone commentaires.
     const comments = root.querySelector('.p-comments');
     if (comments && !comments.querySelector('.rch-project-print-fix')) {
       const notes = [];
@@ -217,7 +213,7 @@
     if (typeof renderAdmin === 'function' && !renderAdmin.__ljsCorrectionDisplayFix) {
       const wrapped = function(...args) {
         const result = renderAdmin.apply(this, args);
-        enrichOriginalAbsenceTypes(window.state?.adminSheet);
+        enrichOriginalAbsenceTypes(state?.adminSheet);
         scheduleScreenFix();
         return result;
       };
@@ -225,10 +221,10 @@
       window.renderAdminEditor = wrapped;
     }
 
-    const renderWeek = window.renderWeek;
-    if (typeof renderWeek === 'function' && !renderWeek.__ljsCorrectionDisplayFix) {
+    const renderWeekFn = window.renderWeek;
+    if (typeof renderWeekFn === 'function' && !renderWeekFn.__ljsCorrectionDisplayFix) {
       const wrapped = function(...args) {
-        const result = renderWeek.apply(this, args);
+        const result = renderWeekFn.apply(this, args);
         scheduleScreenFix();
         return result;
       };
