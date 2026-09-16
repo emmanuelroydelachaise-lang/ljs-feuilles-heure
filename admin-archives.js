@@ -258,3 +258,24 @@
     await renderAdminArchives();
   };
 })();
+
+(() => {
+  const VERSION = '20260916-dashboard-1';
+  function loadAdminDashboardAssets() {
+    if (!document.querySelector('link[data-admin-dashboard]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `./admin-dashboard.css?v=${VERSION}`;
+      link.dataset.adminDashboard = '1';
+      document.head.appendChild(link);
+    }
+    if (!document.querySelector('script[data-admin-dashboard]')) {
+      const script = document.createElement('script');
+      script.src = `./admin-dashboard.js?v=${VERSION}`;
+      script.dataset.adminDashboard = '1';
+      script.async = false;
+      document.head.appendChild(script);
+    }
+  }
+  loadAdminDashboardAssets();
+})();
