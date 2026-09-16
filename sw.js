@@ -1,8 +1,8 @@
-const CACHE = 'ljs-heures-v29';
+const CACHE = 'ljs-heures-v30';
 const ASSETS = [
-  './', './index.html', './styles.css', './print-vector.css', './print-fit.css', './admin-archives.css', './technician-admin-changes.css', './config.js',
+  './', './index.html', './styles.css', './print-vector.css', './print-fit.css', './admin-archives.css', './admin-dashboard.css', './technician-admin-changes.css', './config.js',
   './app-1.js', './app-2.js', './app-3.js', './app-4.js', './app-5.js', './app-6.js',
-  './admin-reset.js', './ui-labels.js', './admin-projects.js', './interim-agency.js', './technician-state.js', './admin-vehicles.js', './admin-pin-guard.js', './admin-archives.js', './technician-admin-changes.js', './pwa-clean.js', './print-logo-fix.js', './print-ready-fix.js',
+  './admin-reset.js', './ui-labels.js', './admin-projects.js', './interim-agency.js', './technician-state.js', './admin-vehicles.js', './admin-pin-guard.js', './admin-archives.js', './admin-dashboard.js', './technician-admin-changes.js', './pwa-clean.js', './print-logo-fix.js', './print-ready-fix.js',
   './manifest.webmanifest', './brand.png', './icon-192-v2.png', './icon-512-v2.png', './print-template.svg'
 ];
 
