@@ -58,7 +58,7 @@ async function resetAdminTimesheet(account){
 function loadProjectPrintCorrection(){
   if(document.querySelector('script[data-project-print-correction]')) return;
   const script=document.createElement('script');
-  script.src='./print-project-correction.js?v=20260916-project-print-fix-2';
+  script.src='./print-project-correction.js?v=20260916-project-print-fix-3';
   script.async=false;
   script.dataset.projectPrintCorrection='1';
   document.head.appendChild(script);
@@ -82,11 +82,12 @@ function loadLeaveDeletePinMask(){
   document.head.appendChild(script);
 }
 
-loadProjectPrintCorrection();
 loadTimesheetNotifications();
 loadLeaveDeletePinMask();
 
 document.addEventListener('DOMContentLoaded',()=>{
+  // Charge la correction d'impression seulement quand tous les scripts principaux
+  // sont en place : même chaîne de rendu pour les archives Responsable et Technicien.
   loadProjectPrintCorrection();
   loadTimesheetNotifications();
   loadLeaveDeletePinMask();
