@@ -69,8 +69,14 @@ function printTimesheet(sheet, technicianName) {
     overlay.push(box(7,y1+2,140,y2-2,'p-day-mask',''));
     overlay.push(box(7,y1,140,y2,'p-day-name',DAY_FULL[di]));
     overlay.push(box(144,y1,219,y2,'p-day-number',String(dayNum)));
+
+    const dayHasHours=!d.absent && (d.entries||[]).some(e=>Number(e.hours||0)>0);
+    const effectiveHoursHtml=dayHasHours
+      ? '<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2mm;font-size:6.2pt;font-weight:700;line-height:1.05;white-space:nowrap"><span>8h00 à 12h00</span><span>13h30 à 17h30</span></div>'
+      : '<div style="width:100%;height:100%;background:#fff"></div>';
+    overlay.push(box(2125,y1+1,2334,y2-1,'p-effective-hours',effectiveHoursHtml));
+
     if(d.absent){overlay.push(box(433,y1,2035,y2,'p-absent'+red(pathChanged(s,`days.${di}.absent`)),'ABSENT'));return;}
-    const dayHasHours=(d.entries||[]).some(e=>Number(e.hours)>0);
     if(dayHasHours) overlay.push(box(220,y1,321,y2,'p-zone'+red(pathChanged(s,`days.${di}.zone`)),String(d.zone)));
     projects.forEach((p,i)=>{
       if(!p) return;
