@@ -83,6 +83,60 @@
     }
   }
 
+  async function verifyResponsiblePinForArchiveDelete() {
+    const pin = prompt('Code responsable requis pour supprimer définitivement cette feuille :');
+    if (pin === null) return false;
+    if (!/^\d{4}$/.test(pin.trim())) {
+      alert('Le code responsable doit contenir 4 chiffres.');
+      return false;
+    }
+    if (typeof window.verifyResponsiblePinEntry !== 'function') {
+      alert('La vérification du code responsable n’est pas disponible. Reconnecte-toi à l’accès responsable puis réessaie.');
+      return false;
+    }
+    const ok = await window.verifyResponsiblePinEntry(pin.trim());
+    if (!ok) alert('Code responsable incorrect.');
+    return ok;
+  }
+
+  async function deleteAdminArchiveSheet(sheet, technicianName, button) {
+    if (!(await verifyResponsiblePinForArchiveDelete())) return;
+    const label = `Semaine ${weekNumber(sheet.week_start)} — ${technicianName}`;
+    if (!confirm(`Supprimer définitivement la feuille ${label} ?\n\nCette action est irréversible.`)) return;
+
+    button.disabled = true;
+    button.textContent = 'Suppression…';
+    try {
+      if (!isCloud) {
+        const db = demoDb();
+        const idx = (db.sheets || []).findIndex(x => x.id === sheet.id);
+        if (idx < 0) throw new Error('Feuille introuvable.');
+        db.sheets.splice(idx, 1);
+        saveDemoDb(db);
+      } else {
+        const workDelete = await sb.from('ljs_work_entries').delete().eq('timesheet_id', sheet.id);
+        if (workDelete.error) throw workDelete.error;
+        const dayDelete = await sb.from('ljs_day_entries').delete().eq('timesheet_id', sheet.id);
+        if (dayDelete.error) throw dayDelete.error;
+        const sheetDelete = await sb.from('ljs_timesheets').delete().eq('id', sheet.id);
+        if (sheetDelete.error) throw sheetDelete.error;
+      }
+
+      if (state.adminSheet?.id === sheet.id) {
+        state.adminSheet = null;
+        document.getElementById('adminEditor')?.classList.add('hidden');
+      }
+
+      await refreshAdmin();
+      alert(`La feuille ${label} a été supprimée.`);
+    } catch (error) {
+      console.error(error);
+      alert('Impossible de supprimer cette feuille : ' + (error.message || error));
+      button.disabled = false;
+      button.textContent = 'Supprimer';
+    }
+  }
+
   async function installAdminArchivePdfButtons() {
     const groups = [...document.querySelectorAll('#adminArchives .archive-tech-group')];
     if (!groups.length) return;
@@ -116,13 +170,24 @@
         if (!actions) return;
         actions.innerHTML = '';
 
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'secondary archive-pdf-only';
-        button.textContent = 'PDF';
-        button.title = 'Télécharger la feuille au format PDF';
-        button.onclick = () => adminPdf(sheet, name, button);
-        actions.appendChild(button);
+        const pdfButton = document.createElement('button');
+        pdfButton.type = 'button';
+        pdfButton.className = 'secondary archive-pdf-only';
+        pdfButton.textContent = 'PDF';
+        pdfButton.title = 'Télécharger la feuille au format PDF';
+        pdfButton.onclick = () => adminPdf(sheet, name, pdfButton);
+        actions.appendChild(pdfButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'secondary archive-delete-only';
+        deleteButton.textContent = 'Supprimer';
+        deleteButton.title = 'Supprimer définitivement cette feuille';
+        deleteButton.style.borderColor = '#d92d20';
+        deleteButton.style.color = '#b42318';
+        deleteButton.style.background = '#fff4f2';
+        deleteButton.onclick = () => deleteAdminArchiveSheet(sheet, name, deleteButton);
+        actions.appendChild(deleteButton);
       });
     });
   }
