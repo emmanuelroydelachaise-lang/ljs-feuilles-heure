@@ -58,16 +58,27 @@ async function resetAdminTimesheet(account){
 function loadProjectPrintCorrection(){
   if(document.querySelector('script[data-project-print-correction]')) return;
   const script=document.createElement('script');
-  script.src='./print-project-correction.js?v=20260916-project-print-fix-1';
+  script.src='./print-project-correction.js?v=20260916-project-print-fix-2';
   script.async=false;
   script.dataset.projectPrintCorrection='1';
   document.head.appendChild(script);
 }
 
+function loadTimesheetNotifications(){
+  if(document.querySelector('script[data-timesheet-notifications]')) return;
+  const script=document.createElement('script');
+  script.src='./timesheet-notifications.js?v=20260916-timesheet-notif-1';
+  script.async=false;
+  script.dataset.timesheetNotifications='1';
+  document.head.appendChild(script);
+}
+
 loadProjectPrintCorrection();
+loadTimesheetNotifications();
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadProjectPrintCorrection();
+  loadTimesheetNotifications();
   const app=document.getElementById('app');
   if(!app) return;
   const observer=new MutationObserver(()=>enhanceAdminResetButtons());
