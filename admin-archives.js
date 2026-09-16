@@ -37,7 +37,7 @@
       <div class="archive-title-row">
         <div>
           <h2>Archives des feuilles d’heures</h2>
-          <p class="hint">Toutes les anciennes feuilles sont conservées ici, classées par technicien, y compris après suppression d’un technicien.</p>
+          <p class="hint">Uniquement les feuilles validées par le responsable sont conservées ici, classées par technicien.</p>
         </div>
         <button id="refreshArchivesBtn" class="secondary">Actualiser</button>
       </div>
@@ -156,7 +156,7 @@
   async function getArchiveSheets() {
     if (!isCloud) {
       const db = demoDb();
-      return (db.sheets || []).map(s => {
+      return (db.sheets || []).filter(s => s.status === 'approved').map(s => {
         const t = (db.technicians || []).find(x => x.id === s.technician_id);
         let total = 0;
         try { total = totalWeek(normalizeSheet(deepClone(s), s.week_start)); } catch (_) {}
@@ -169,7 +169,7 @@
       });
     }
 
-    const { data, error } = await sb.from('ljs_timesheets_admin').select('*');
+    const { data, error } = await sb.from('ljs_timesheets_admin').select('*').eq('status', 'approved');
     if (error) throw error;
     return data || [];
   }
@@ -197,7 +197,7 @@
 
       box.innerHTML = '';
       if (!groups.size) {
-        box.innerHTML = '<p class="hint">Aucune feuille d’heures archivée pour le moment.</p>';
+        box.innerHTML = '<p class="hint">Aucune feuille validée par le responsable pour le moment.</p>';
         return;
       }
 
