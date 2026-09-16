@@ -21,9 +21,19 @@ function loadTechnicianAdminChanges(){
   }
 }
 
+function loadAdminArchiveNavigation(){
+  if(document.querySelector('script[data-admin-archive-navigation]')) return;
+  const script=document.createElement('script');
+  script.src='./admin-archive-navigation.js?v=20260916-archives-bottom-1';
+  script.dataset.adminArchiveNavigation='1';
+  script.async=false;
+  document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   applyShortAbsentLabels();
   loadTechnicianAdminChanges();
+  loadAdminArchiveNavigation();
   const app=document.getElementById('app');
   if(!app) return;
   const observer=new MutationObserver(()=>applyShortAbsentLabels(app));
