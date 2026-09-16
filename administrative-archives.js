@@ -174,5 +174,34 @@
     setTimeout(() => document.getElementById('administrativePinInput')?.focus(), 0);
   }
 
+  function addAdministrativeEntryToLogin() {
+    const responsibleButton = document.getElementById('adminLoginOpen');
+    if (!responsibleButton || document.getElementById('administrativeLoginOpen')) return;
+    const button = document.createElement('button');
+    button.id = 'administrativeLoginOpen';
+    button.type = 'button';
+    button.className = 'link-btn';
+    button.textContent = 'Accès administratif';
+    button.onclick = showAdministrativeLogin;
+    responsibleButton.insertAdjacentElement('afterend', button);
+  }
+
+  function installShowLoginWrapper() {
+    const baseShowLogin = window.showLogin;
+    if (typeof baseShowLogin !== 'function' || baseShowLogin.__ljsAdministrativeAccess) {
+      addAdministrativeEntryToLogin();
+      return;
+    }
+    const wrappedShowLogin = async function(...args) {
+      const result = await baseShowLogin.apply(this, args);
+      addAdministrativeEntryToLogin();
+      return result;
+    };
+    wrappedShowLogin.__ljsAdministrativeAccess = true;
+    window.showLogin = wrappedShowLogin;
+    addAdministrativeEntryToLogin();
+  }
+
   window.showAdministrativeLogin = showAdministrativeLogin;
+  installShowLoginWrapper();
 })();
