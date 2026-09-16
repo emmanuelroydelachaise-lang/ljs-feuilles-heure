@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260916-pwa-16';
+  const VERSION = '20260916-pwa-17';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
@@ -86,6 +86,15 @@
       script.async = false;
       document.head.appendChild(script);
     }
+  }
+
+  function loadTechnicianFormFixes() {
+    if (document.querySelector('script[data-technician-form-fixes]')) return;
+    const script = document.createElement('script');
+    script.src = `./technician-form-fixes.js?v=${VERSION}`;
+    script.dataset.technicianFormFixes = '1';
+    script.async = false;
+    document.head.appendChild(script);
   }
 
   function loadAdminPinGuard() {
@@ -195,6 +204,7 @@
     installInlineLogos();
     loadPrintLogoFix();
     loadPrintReliabilityFixes();
+    loadTechnicianFormFixes();
     loadAdminPinGuard();
     loadTechnicianState();
     loadAdminVehicles();
@@ -216,6 +226,7 @@
     installInlineLogos();
     loadPrintLogoFix();
     loadPrintReliabilityFixes();
+    loadTechnicianFormFixes();
     loadAdminPinGuard();
     loadTechnicianState();
     loadAdminVehicles();
