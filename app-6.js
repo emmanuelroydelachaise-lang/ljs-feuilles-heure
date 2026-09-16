@@ -95,10 +95,15 @@ function printTimesheet(sheet, technicianName) {
   overlay.push(box(2039,1468,2123,1538,'p-week-total'+red(anyHoursChanged),fmtCellHours(totalWeek(s))));
   if(s.technician_signature) overlay.push(box(170,1572,1190,1642,'p-signature',`<img src="${s.technician_signature}" alt="Signature technicien">`));
   if(s.responsible_signature) overlay.push(box(1515,1572,2285,1642,'p-signature responsible-signature-print red-edit',`<img src="${s.responsible_signature}" alt="Signature responsable">`));
-  printArea.innerHTML=`<div class="exact-print-sheet"><img class="exact-print-bg" src="print-template.png" alt="Modèle original LJS">${overlay.join('')}</div>`;
+  printArea.innerHTML=`<div class="exact-print-sheet"><img class="exact-print-bg" src="./print-template.svg?v=20260916-print-2" alt="Modèle original LJS">${overlay.join('')}</div>`;
   const images=[...printArea.querySelectorAll('img')];
-  const waits=images.filter(im=>!im.complete).map(im=>new Promise(resolve=>{im.onload=resolve;im.onerror=resolve;}));
-  Promise.all(waits).then(()=>setTimeout(()=>window.print(),80));
+  const waits=images.map(im=>new Promise(resolve=>{
+    const finish=async()=>{try{if(im.decode)await im.decode();}catch(_){}resolve();};
+    if(im.complete){finish();return;}
+    im.addEventListener('load',finish,{once:true});
+    im.addEventListener('error',finish,{once:true});
+  }));
+  Promise.all(waits).then(()=>setTimeout(()=>window.print(),120));
 }
 
 document.addEventListener('DOMContentLoaded', showLogin);
