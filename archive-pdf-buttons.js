@@ -13,12 +13,22 @@
     }
   }
 
+  async function loadFinalArchiveSheet(sheetId, technicianName, weekStart='') {
+    if (typeof window.loadAdminSheet === 'function' && sheetId) {
+      return await window.loadAdminSheet(sheetId, technicianName);
+    }
+    if (weekStart && typeof window.loadSheet === 'function') {
+      await window.loadSheet(weekStart);
+      return deepClone(state.sheet);
+    }
+    throw new Error('Impossible de charger la feuille archivée.');
+  }
+
   async function technicianPdf(summary, button) {
     const previousSheet = state.sheet ? deepClone(state.sheet) : null;
     setBusy(button, true);
     try {
-      await loadSheet(summary.week_start);
-      const fullSheet = deepClone(state.sheet);
+      const fullSheet = await loadFinalArchiveSheet(summary.id, currentProfile.full_name, summary.week_start);
       await window.downloadTimesheetPdf(fullSheet, currentProfile.full_name);
     } catch (error) {
       alert('Impossible de créer le PDF : ' + (error.message || error));
@@ -53,7 +63,7 @@
         row.appendChild(button);
       }
       button.textContent = 'PDF';
-      button.title = 'Télécharger la feuille au format PDF';
+      button.title = 'Télécharger exactement la même feuille PDF que dans les archives Responsable';
       button.onclick = () => technicianPdf(summary, button);
     });
   }
@@ -74,7 +84,7 @@
   async function adminPdf(sheet, technicianName, button) {
     setBusy(button, true);
     try {
-      const full = await loadAdminSheet(sheet.id, technicianName);
+      const full = await loadFinalArchiveSheet(sheet.id, technicianName, sheet.week_start);
       await window.downloadTimesheetPdf(full, technicianName);
     } catch (error) {
       alert('Impossible de créer le PDF : ' + (error.message || error));
