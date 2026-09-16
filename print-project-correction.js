@@ -1,13 +1,9 @@
 (() => {
-  const VERSION = '20260916-project-print-fix-2';
+  const VERSION = '20260916-project-print-fix-3';
+  const baseGetPrintProjects = window.getPrintProjects;
+  if (typeof baseGetPrintProjects !== 'function') return;
 
   const changed = (sheet, path) => Array.isArray(sheet?.admin_changes) && sheet.admin_changes.includes(path);
-
-  function escPrint(value='') {
-    return typeof esc === 'function'
-      ? esc(value)
-      : String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
 
   function projectKey(entry) {
     if (!entry) return '';
@@ -20,15 +16,16 @@
   }
 
   function projectParts(entry) {
-    if (!entry) return { code:'', name:'—', text:'—' };
+    if (!entry) return { code:'', name:'Chantier précédent' };
     if (entry.project_id === OTHER_PROJECT_ID || !entry.project_id) {
-      const code = String(entry.manual_project_code || '').trim();
-      const name = String(entry.manual_project_name || '').trim() || 'Chantier autre';
-      return { code, name, text:code ? `${code} — ${name}` : name };
+      return {
+        code:String(entry.manual_project_code || '').trim(),
+        name:String(entry.manual_project_name || '').trim() || 'Chantier autre'
+      };
     }
     const p = projectById(entry.project_id);
-    if (p) return { code:String(p.code || ''), name:String(p.name || ''), text:`${p.code} — ${p.name}` };
-    return { code:'', name:'Chantier historique', text:'Chantier historique' };
+    if (p) return { code:String(p.code || ''), name:String(p.name || '') };
+    return { code:'', name:'Chantier précédent' };
   }
 
   function originalDay(sheet, di) {
@@ -45,41 +42,78 @@
       changed(sheet, `${prefix}.manual_project_name`);
   }
 
+  function changedProjectMap(sheet) {
+    const result = new Map();
+    (sheet?.days || []).forEach((newDay, di) => {
+      const oldDay = originalDay(sheet, di);
+      if (!oldDay) return;
+      (newDay.entries || []).forEach((newEntry, ei) => {
+        if (!projectWasChanged(sheet, di, ei)) return;
+        const oldEntry = oldDay.entries?.[ei];
+        if (!oldEntry) return;
+        const newKey = projectKey(newEntry);
+        const oldKey = projectKey(oldEntry);
+        if (!newKey || oldKey === newKey) return;
+        if (!result.has(newKey)) result.set(newKey, { oldEntry, newEntry });
+      });
+    });
+    return result;
+  }
+
+  function enhancedProjects(sheet) {
+    const normal = baseGetPrintProjects(sheet);
+    if (!sheet?.technician_original) return normal;
+    const changes = changedProjectMap(sheet);
+    if (!changes.size) return normal;
+
+    const out = [];
+    normal.forEach(project => {
+      const change = changes.get(project.key);
+      if (change && out.length < 18) {
+        const old = projectParts(change.oldEntry);
+        out.push({
+          id:`rch-old-${project.key}`,
+          key:`rch-old-${project.key}`,
+          code:old.code,
+          name:old.name,
+          manual:true,
+          _rchCorrectionOld:true,
+          _rchForKey:project.key
+        });
+      }
+      if (out.length < 18) {
+        out.push(change ? {...project, _rchCorrectionNew:true} : project);
+      }
+    });
+    return out.slice(0,18);
+  }
+
+  window.getPrintProjects = enhancedProjects;
+
   function installStyle() {
     if (document.getElementById('printProjectCorrectionStyle')) return;
     const style = document.createElement('style');
     style.id = 'printProjectCorrectionStyle';
     style.textContent = `
-      @media print{
-        .p-project-vertical.rch-project-header-corrected{overflow:visible!important;color:#000!important}
-        .p-project-vertical .rch-project-header-pair{display:flex!important;align-items:center!important;justify-content:center!important;gap:.8mm!important;white-space:nowrap!important;transform:rotate(-90deg)!important;transform-origin:center center!important;max-width:none!important;line-height:1!important}
-        .p-project-name .rch-project-header-pair{font-size:4.4pt!important}
-        .p-project-code .rch-project-header-pair{font-size:5.2pt!important}
-        .p-project-vertical .rch-project-header-pair span{display:inline!important;transform:none!important;max-width:none!important;white-space:nowrap!important}
-        .rch-project-header-old,.rch-print-old-fix,.rch-print-old{color:#555!important;text-decoration:line-through!important;text-decoration-thickness:.35mm!important;font-weight:700!important}
-        .rch-project-header-new,.rch-print-new-fix,.rch-print-new{color:#d40000!important;font-weight:900!important}
-        .rch-project-header-arrow{color:#777!important;font-weight:700!important}
-      }
-      .ljs-pdf-stage .p-project-vertical.rch-project-header-corrected{overflow:visible!important;color:#000!important}
-      .ljs-pdf-stage .p-project-vertical .rch-project-header-pair{display:flex!important;align-items:center!important;justify-content:center!important;gap:.8mm!important;white-space:nowrap!important;transform:rotate(-90deg)!important;transform-origin:center center!important;max-width:none!important;line-height:1!important}
-      .ljs-pdf-stage .p-project-name .rch-project-header-pair{font-size:4.4pt!important}
-      .ljs-pdf-stage .p-project-code .rch-project-header-pair{font-size:5.2pt!important}
-      .ljs-pdf-stage .p-project-vertical .rch-project-header-pair span{display:inline!important;transform:none!important;max-width:none!important;white-space:nowrap!important;background:#fff!important;padding:0!important}
-      .ljs-pdf-stage .rch-project-header-old,.ljs-pdf-stage .rch-print-old-fix,.ljs-pdf-stage .rch-print-old{color:#555!important;text-decoration:line-through!important;text-decoration-thickness:.35mm!important;font-weight:700!important}
-      .ljs-pdf-stage .rch-project-header-new,.ljs-pdf-stage .rch-print-new-fix,.ljs-pdf-stage .rch-print-new{color:#d40000!important;font-weight:900!important}
-      .ljs-pdf-stage .rch-project-header-arrow{color:#777!important;font-weight:700!important}
+      .p-project-code.rch-project-old,.p-project-name.rch-project-old{color:#666!important}
+      .p-project-code.rch-project-old span,.p-project-name.rch-project-old span{color:#666!important;text-decoration:line-through!important;text-decoration-thickness:1.5px!important;font-weight:700!important}
+      .p-project-code.rch-project-new,.p-project-name.rch-project-new{color:#d40000!important;font-weight:900!important}
+      .p-project-code.rch-project-new span,.p-project-name.rch-project-new span{color:#d40000!important;font-weight:900!important}
+      .ljs-pdf-stage .p-project-code.rch-project-old span,.ljs-pdf-stage .p-project-name.rch-project-old span{color:#666!important;text-decoration:line-through!important;text-decoration-thickness:1.5px!important;font-weight:700!important}
+      .ljs-pdf-stage .p-project-code.rch-project-new span,.ljs-pdf-stage .p-project-name.rch-project-new span{color:#d40000!important;font-weight:900!important}
+      .ljs-pdf-stage .rch-print-old-fix,.ljs-pdf-stage .rch-print-old{color:#555!important;text-decoration:line-through!important;text-decoration-thickness:1.5px!important;font-weight:700!important}
+      .ljs-pdf-stage .rch-print-new-fix,.ljs-pdf-stage .rch-print-new{color:#d40000!important;font-weight:900!important}
       .ljs-pdf-stage .rch-print-pair{width:100%;height:100%;display:flex!important;gap:1mm;align-items:center;justify-content:center;flex-wrap:wrap;background:#fff;padding:.2mm;box-sizing:border-box;line-height:1}
-      .ljs-pdf-stage .rch-print-note{display:block;width:100%;font-size:6pt;line-height:1.15;margin-bottom:.5mm}
+      @media print{
+        .p-project-code.rch-project-old span,.p-project-name.rch-project-old span{color:#666!important;text-decoration:line-through!important;text-decoration-thickness:.35mm!important;font-weight:700!important}
+        .p-project-code.rch-project-new span,.p-project-name.rch-project-new span{color:#d40000!important;font-weight:900!important}
+      }
     `;
     document.head.appendChild(style);
   }
 
-  function pairHtml(oldValue, newValue) {
-    return `<div class="rch-project-header-pair"><span class="rch-project-header-old">${escPrint(oldValue || '—')}</span><span class="rch-project-header-arrow">→</span><span class="rch-project-header-new">${escPrint(newValue || '—')}</span></div>`;
-  }
-
   function removeProjectNotesFromComments(root) {
-    const comments = root.querySelector('.p-comments');
+    const comments = root?.querySelector('.p-comments');
     if (!comments) return;
     comments.querySelectorAll('.rch-project-print-fix').forEach(el => el.remove());
     comments.querySelectorAll('.rch-print-note').forEach(el => {
@@ -87,81 +121,39 @@
     });
   }
 
-  function moveProjectCorrectionsToHeaders(sheet) {
+  function decorateHeaders(sheet) {
     const root = document.querySelector('#printArea .exact-print-sheet');
-    if (!root || !sheet?.technician_original) return;
-
-    const current = normalizeSheet(
-      typeof deepClone === 'function' ? deepClone(sheet) : JSON.parse(JSON.stringify(sheet)),
-      sheet.week_start
-    );
-
+    if (!root) return;
     removeProjectNotesFromComments(root);
 
-    const changesByNewKey = new Map();
-    (current.days || []).forEach((newDay, di) => {
-      const oldDay = originalDay(current, di);
-      if (!oldDay) return;
-      (newDay.entries || []).forEach((newEntry, ei) => {
-        if (!projectWasChanged(current, di, ei)) return;
-        const oldEntry = oldDay.entries?.[ei];
-        if (!oldEntry) return;
-        const oldParts = projectParts(oldEntry);
-        const newParts = projectParts(newEntry);
-        if (oldParts.text === newParts.text) return;
-        const key = projectKey(newEntry);
-        if (key && !changesByNewKey.has(key)) changesByNewKey.set(key, { oldParts, newParts });
-      });
-    });
-
-    if (!changesByNewKey.size) return;
-
-    const projects = getPrintProjects(current);
-    const codeCells = [...root.querySelectorAll('.p-project-code')];
-    const nameCells = [...root.querySelectorAll('.p-project-name')];
-
+    const projects = enhancedProjects(sheet);
+    const codes = [...root.querySelectorAll('.p-project-code')];
+    const names = [...root.querySelectorAll('.p-project-name')];
     projects.forEach((project, index) => {
-      const change = changesByNewKey.get(project.key);
-      if (!change) return;
-
-      const codeCell = codeCells[index];
-      const nameCell = nameCells[index];
-      if (codeCell) {
-        codeCell.classList.add('rch-project-header-corrected');
-        if (change.oldParts.code && change.oldParts.code !== change.newParts.code) {
-          codeCell.innerHTML = pairHtml(change.oldParts.code, change.newParts.code);
-        } else {
-          codeCell.innerHTML = `<div class="rch-project-header-pair"><span class="rch-project-header-new">${escPrint(change.newParts.code || project.code || '')}</span></div>`;
-        }
-      }
-      if (nameCell) {
-        nameCell.classList.add('rch-project-header-corrected');
-        nameCell.innerHTML = pairHtml(change.oldParts.name, change.newParts.name);
-      }
+      const targets = [codes[index], names[index]].filter(Boolean);
+      if (project._rchCorrectionOld) targets.forEach(el => el.classList.add('rch-project-old'));
+      if (project._rchCorrectionNew) targets.forEach(el => el.classList.add('rch-project-new'));
     });
   }
 
-  function afterOtherPrintDecorators(sheet) {
-    requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => {
-      moveProjectCorrectionsToHeaders(sheet);
-    })));
+  function scheduleDecorate(sheet) {
+    requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => decorateHeaders(sheet))));
   }
 
   function wrapPrint() {
     const currentPrint = window.printTimesheet;
-    if (typeof currentPrint !== 'function' || currentPrint.__ljsProjectPrintCorrection) return;
+    if (typeof currentPrint !== 'function' || currentPrint.__ljsProjectPrintCorrectionV3) return;
     const wrapped = function(sheet, technicianName) {
       const result = currentPrint.apply(this, arguments);
-      afterOtherPrintDecorators(sheet);
+      scheduleDecorate(sheet);
       return result;
     };
-    wrapped.__ljsProjectPrintCorrection = true;
+    wrapped.__ljsProjectPrintCorrectionV3 = true;
     window.printTimesheet = wrapped;
   }
 
   installStyle();
   wrapPrint();
   setTimeout(wrapPrint, 0);
-  setTimeout(wrapPrint, 400);
   window.LJS_PROJECT_PRINT_CORRECTION = VERSION;
 })();
