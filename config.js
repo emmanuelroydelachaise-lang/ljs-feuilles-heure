@@ -9,3 +9,12 @@ window.LJS_CONFIG = {
   ],
   ADMIN_ACCOUNT: { name: "Responsable", email: "responsable@ljs.local" }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.querySelector('script[data-hours-limits]')) return;
+  const script = document.createElement('script');
+  script.src = './hours-limits.js?v=20260916-hours-limits-1';
+  script.dataset.hoursLimits = '1';
+  script.async = false;
+  document.head.appendChild(script);
+});
