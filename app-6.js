@@ -70,9 +70,13 @@ function printTimesheet(sheet, technicianName) {
     overlay.push(box(7,y1,140,y2,'p-day-name',DAY_FULL[di]));
     overlay.push(box(144,y1,219,y2,'p-day-number',String(dayNum)));
 
-    const dayHasHours=!d.absent && (d.entries||[]).some(e=>Number(e.hours||0)>0);
-    const effectiveHoursHtml=dayHasHours
-      ? '<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2mm;font-size:6.2pt;font-weight:700;line-height:1.05;white-space:nowrap"><span>8h00 à 12h00</span><span>13h30 à 17h30</span></div>'
+    const dt=totalDay(d);
+    const dayHasHours=!d.absent && dt>0;
+    const expectedHours=di===4?7:8;
+    const hasStandardFullDay=!d.absent && Math.abs(dt-expectedHours)<0.001;
+    const afternoonEnd=di===4?'16h30':'17h30';
+    const effectiveHoursHtml=hasStandardFullDay
+      ? `<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2mm;font-size:6.2pt;font-weight:700;line-height:1.05;white-space:nowrap"><span>8h00 à 12h00</span><span>13h30 à ${afternoonEnd}</span></div>`
       : '<div style="width:100%;height:100%;background:#fff"></div>';
     overlay.push(box(2125,y1+1,2334,y2-1,'p-effective-hours',effectiveHoursHtml));
 
@@ -85,7 +89,6 @@ function printTimesheet(sheet, technicianName) {
       const x1=projectX0+i*projectW, x2=x1+projectW;
       overlay.push(box(x1+2,y1,x2-2,y2,'p-hours'+red(cellChangedForProject(s,di,p.key)),fmtCellHours(h)));
     });
-    const dt=totalDay(d);
     if(dt) overlay.push(box(2039,y1,2123,y2,'p-day-total'+red(dayHoursChanged(s,di)),fmtCellHours(dt)));
   });
 
