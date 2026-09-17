@@ -9,7 +9,13 @@
       .ljs-comments-row textarea{width:100%;box-sizing:border-box;min-height:92px;resize:vertical}
       .ljs-tech-comment-readonly textarea{background:#f3f5f7;color:#44515c;border-color:#cbd3da;cursor:not-allowed}
       .ljs-comment-owner{display:block;margin-top:5px;font-size:.76rem;color:#667480;font-weight:650}
+      .p-comments.ljs-has-responsible-comment{flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:.5mm!important}
+      .p-comments .ljs-responsible-print-comment{display:block!important;width:100%!important;color:#d40000!important;font-weight:900!important;background:#fff!important;white-space:normal!important;line-height:1.15!important}
+      .ljs-pdf-stage .p-comments .ljs-responsible-print-comment{color:#d40000!important;font-weight:900!important;background:#fff!important}
       @media (max-width:760px){.ljs-comments-row{grid-template-columns:1fr}}
+      @media print{
+        .p-comments .ljs-responsible-print-comment{color:#d40000!important;font-weight:900!important;background:#fff!important}
+      }
     `;
     document.head.appendChild(style);
   }
@@ -65,6 +71,35 @@
     };
   }
 
+  function decoratePrintResponsibleComment(sheet) {
+    const comments = document.querySelector('#printArea .exact-print-sheet .p-comments');
+    if (!comments) return;
+
+    comments.querySelectorAll('.ljs-responsible-print-comment').forEach(el => el.remove());
+    comments.classList.remove('ljs-has-responsible-comment');
+
+    const responsibleComment = String(sheet?.responsible_comment || '').trim();
+    if (!responsibleComment) return;
+
+    comments.classList.add('ljs-has-responsible-comment');
+    const line = document.createElement('span');
+    line.className = 'ljs-responsible-print-comment';
+    line.textContent = `Responsable : ${responsibleComment}`;
+    comments.appendChild(line);
+  }
+
+  function schedulePrintComment(sheet) {
+    decoratePrintResponsibleComment(sheet);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => decoratePrintResponsibleComment(sheet))
+        )
+      )
+    );
+    setTimeout(() => decoratePrintResponsibleComment(sheet), 90);
+  }
+
   const baseRenderAdminEditor = window.renderAdminEditor;
   if (typeof baseRenderAdminEditor === 'function' && !baseRenderAdminEditor.__ljsResponsibleComments) {
     const wrapped = function(...args) {
@@ -106,5 +141,25 @@
     window.saveAdminSheet = wrapped;
   }
 
+  function wrapPrintTimesheet(attempt = 0) {
+    const basePrintTimesheet = window.printTimesheet;
+    if (typeof basePrintTimesheet !== 'function') {
+      if (attempt < 40) setTimeout(() => wrapPrintTimesheet(attempt + 1), 50);
+      return;
+    }
+    if (basePrintTimesheet.__ljsResponsibleCommentPrint) return;
+
+    const wrapped = function(sheet, technicianName) {
+      const result = basePrintTimesheet.apply(this, arguments);
+      schedulePrintComment(sheet);
+      return result;
+    };
+    wrapped.__ljsResponsibleCommentPrint = true;
+    window.printTimesheet = wrapped;
+  }
+
   installStyles();
+  wrapPrintTimesheet();
+  setTimeout(wrapPrintTimesheet, 0);
+  setTimeout(wrapPrintTimesheet, 500);
 })();
