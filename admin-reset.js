@@ -82,8 +82,18 @@ function loadLeaveDeletePinMask(){
   document.head.appendChild(script);
 }
 
+function loadResponsibleComments(){
+  if(document.querySelector('script[data-responsible-comments]')) return;
+  const script=document.createElement('script');
+  script.src='./responsible-comments.js?v=20260917-responsible-comments-1';
+  script.async=false;
+  script.dataset.responsibleComments='1';
+  document.head.appendChild(script);
+}
+
 loadTimesheetNotifications();
 loadLeaveDeletePinMask();
+loadResponsibleComments();
 
 document.addEventListener('DOMContentLoaded',()=>{
   // Charge la correction d'impression seulement quand tous les scripts principaux
@@ -91,6 +101,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadProjectPrintCorrection();
   loadTimesheetNotifications();
   loadLeaveDeletePinMask();
+  loadResponsibleComments();
   const app=document.getElementById('app');
   if(!app) return;
   const observer=new MutationObserver(()=>enhanceAdminResetButtons());
