@@ -277,7 +277,7 @@
         <button class="secondary admin-leave-archive-delete" type="button">Supprimer</button>
       </div>
       <div class="admin-leave-archive-details-box hidden">
-        ${request.refusal_reason ? `<div><strong>Motif du refus :</strong> ${esc(request.refusal_reason)}</div>` : ''}
+        ${request.refusal_reason ? `<div class="admin-leave-refusal-reason"><strong>Motif du refus :</strong> ${esc(request.refusal_reason)}</div>` : ''}
         <div class="admin-leave-signatures">
           <div><span class="admin-leave-mini-label">Signature du technicien</span>${request.employee_signature ? `<img src="${request.employee_signature}" alt="Signature technicien">` : ''}</div>
           <div><span class="admin-leave-mini-label">Signature du responsable</span>${request.responsible_signature ? `<img class="admin-leave-red-signature" src="${request.responsible_signature}" alt="Signature responsable">` : ''}</div>
