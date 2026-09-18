@@ -182,7 +182,7 @@
       <div class="leave-request-decision ${approved ? 'approved' : 'refused'}">
         <strong>Accord du responsable : ${approved ? 'OUI' : 'NON'}</strong>
         ${request.decision_date ? `<span>Date : ${esc(fmtDate(request.decision_date))}</span>` : ''}
-        ${!approved && request.refusal_reason ? `<span>Motif du refus : ${esc(request.refusal_reason)}</span>` : ''}
+        ${!approved && request.refusal_reason ? `<span class="leave-refusal-reason">Motif du refus : ${esc(request.refusal_reason)}</span>` : ''}
         ${request.responsible_name ? `<span>Responsable : ${esc(request.responsible_name)}</span>` : ''}
         ${request.responsible_signature ? `<img class="leave-responsible-signature" src="${request.responsible_signature}" alt="Signature responsable">` : ''}
       </div>`;
