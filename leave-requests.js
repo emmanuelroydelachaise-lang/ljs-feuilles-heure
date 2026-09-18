@@ -257,7 +257,7 @@
 })();
 
 (() => {
-  const VERSION = '20260916-leave-pdf-1';
+  const VERSION = '20260918-leave-pdf-red-2';
   function loadButtons() {
     if (document.querySelector('script[data-leave-pdf-buttons]')) return;
     const buttons = document.createElement('script');
