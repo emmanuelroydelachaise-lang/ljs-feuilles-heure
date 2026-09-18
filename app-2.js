@@ -36,6 +36,7 @@ function showAdminLogin() {
   if (!isCloud) document.getElementById('adminLoginError').textContent = 'Mode démo : PIN responsable 3002.';
   document.getElementById('adminLoginBtn').onclick = adminLogin;
   document.getElementById('backToTech').onclick = showLogin;
+  document.getElementById('adminPinInput').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
 }
 async function adminLogin() {
   const pin = document.getElementById('adminPinInput').value.trim();
