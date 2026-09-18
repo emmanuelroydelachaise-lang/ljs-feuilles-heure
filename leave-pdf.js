@@ -107,7 +107,7 @@
       </div>
 
       <div class="leave-pdf-field leave-pdf-decision-date"><strong>DATE ACCORD OU REFUS :</strong> <span class="leave-pdf-red">${decided ? esc(fmtDate(request.decision_date)) : ''}</span></div>
-      <div class="leave-pdf-field leave-pdf-refusal"><strong>MOTIF DU REFUS :</strong> <span>${refused ? esc(request.refusal_reason || '') : ''}</span></div>
+      <div class="leave-pdf-field leave-pdf-refusal"><strong>MOTIF DU REFUS :</strong> <span class="leave-pdf-red">${refused ? esc(request.refusal_reason || '') : ''}</span></div>
 
       <div class="leave-pdf-reminder">Il est rappelé que <u>tout départ en congés doit être pris une fois<br>ce bordereau visé.</u></div>
 
