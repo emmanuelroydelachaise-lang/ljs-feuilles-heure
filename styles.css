@@ -149,3 +149,5 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   .tech-edit-actions { width:100%; }
   .tech-edit-actions button { flex:1; }
 }
+
+#adminLoginOpen { display:none !important; }
