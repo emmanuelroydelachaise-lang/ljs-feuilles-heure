@@ -43,7 +43,7 @@
 
       <section class="card">
         <h2>Personnel / techniciens</h2>
-        <p class="hint">Ajoute ou modifie un technicien. « Retirer » le masque des listes sans supprimer ses anciennes feuilles.</p>
+        <p class="hint">Ajoute, modifie, retire ou supprime un technicien. Les anciennes feuilles restent conservées dans les archives.</p>
         <div class="technician-add">
           <input id="managementTechName" placeholder="Nom et prénom" />
           <select id="managementTechType"><option value="employee">Salarié</option><option value="interim">Intérim</option></select>
@@ -58,7 +58,7 @@
 
       <section class="card">
         <h2>Véhicules</h2>
-        <p class="hint">Ajoute l’immatriculation et la marque. Un véhicule retiré n’est plus proposé aux techniciens.</p>
+        <p class="hint">Ajoute, modifie, retire ou supprime un véhicule. Les anciennes feuilles restent conservées.</p>
         <div class="project-add">
           <input id="managementVehicleRegistration" placeholder="Immatriculation" />
           <input id="managementVehicleBrand" placeholder="Marque" />
@@ -69,7 +69,7 @@
 
       <section class="card">
         <h2>Chantiers</h2>
-        <p class="hint">Ajoute ou modifie un chantier. Un chantier retiré disparaît des nouvelles feuilles mais reste conservé dans l’historique.</p>
+        <p class="hint">Ajoute, modifie, retire ou supprime un chantier. Les anciennes feuilles restent conservées dans l’historique.</p>
         <div class="project-add">
           <input id="managementProjectCode" placeholder="N° affaire" />
           <input id="managementProjectName" placeholder="Nom du chantier" />
@@ -134,6 +134,7 @@
         <div class="admin-row-actions">
           <button class="secondary edit-item" type="button">Modifier</button>
           <button class="secondary toggle-item" type="button">${t.active === false ? 'Réactiver' : 'Retirer'}</button>
+          <button class="secondary delete-item" type="button" style="border-color:#d92d20;color:#b42318;background:#fff4f2">Supprimer</button>
         </div>
         <div class="tech-edit-form hidden">
           <div><label>Nom et prénom</label><input class="edit-name" value="${esc(t.full_name)}" /></div>
@@ -204,6 +205,27 @@
         }
       };
 
+      row.querySelector('.delete-item').onclick = async () => {
+        if (!confirm(`Supprimer ${t.full_name} de la liste des techniciens ?\n\nSes anciennes feuilles resteront conservées dans les archives.`)) return;
+        try {
+          if (!isCloud) {
+            const db = demoDb();
+            const found = (db.technicians || []).find(x => x.id === t.id);
+            if (found) { found.active = false; found.deleted = true; }
+            saveDemoDb(db);
+          } else {
+            const {error} = await sb.rpc('ljs_set_technician_state', {
+              p_technician_id: t.id,
+              p_action: 'delete'
+            });
+            if (error) throw error;
+          }
+          await refreshManagement();
+        } catch (error) {
+          alert('Impossible de supprimer le technicien : ' + (error.message || error));
+        }
+      };
+
       box.appendChild(row);
     });
   }
@@ -264,7 +286,7 @@
       row.className = 'admin-item project-admin-item';
       row.innerHTML = `
         <div class="project-summary"><strong>${esc(v.registration)}</strong><div class="meta">${v.brand ? esc(v.brand) + ' · ' : ''}${v.active === false ? 'Retiré' : 'Actif'}</div></div>
-        <div class="admin-row-actions"><button class="secondary edit-item" type="button">Modifier</button><button class="secondary toggle-item" type="button">${v.active === false ? 'Réactiver' : 'Retirer'}</button></div>
+        <div class="admin-row-actions"><button class="secondary edit-item" type="button">Modifier</button><button class="secondary toggle-item" type="button">${v.active === false ? 'Réactiver' : 'Retirer'}</button><button class="secondary delete-item" type="button" style="border-color:#d92d20;color:#b42318;background:#fff4f2">Supprimer</button></div>
         <div class="project-edit-form hidden" style="width:100%;margin-top:10px">
           <div class="project-add">
             <input class="edit-registration" value="${esc(v.registration)}" placeholder="Immatriculation" />
@@ -312,6 +334,23 @@
           await refreshManagement();
         } catch (error) {
           alert('Impossible de modifier le véhicule : ' + (error.message || error));
+        }
+      };
+      row.querySelector('.delete-item').onclick = async () => {
+        if (!confirm(`Supprimer le véhicule ${v.registration} ?\n\nIl disparaîtra des listes mais restera identifiable dans les anciennes feuilles.`)) return;
+        try {
+          if (!isCloud) {
+            const db = demoDb();
+            const found = (db.vehicles || []).find(x => x.id === v.id);
+            if (found) { found.active = false; found.deleted = true; }
+            saveDemoDb(db);
+          } else {
+            const {error} = await sb.from('ljs_vehicles').update({active:false, deleted:true}).eq('id', v.id);
+            if (error) throw error;
+          }
+          await refreshManagement();
+        } catch (error) {
+          alert('Impossible de supprimer le véhicule : ' + (error.message || error));
         }
       };
       box.appendChild(row);
@@ -365,7 +404,7 @@
     const box = document.getElementById('managementProjects');
     if (!box) return;
     box.innerHTML = '';
-    const projects = await fetchProjects();
+    const projects = (await fetchProjects()).filter(p => !p.deleted);
 
     if (!projects.length) {
       box.innerHTML = '<p class="hint">Aucun chantier enregistré.</p>';
@@ -377,7 +416,7 @@
       row.className = 'admin-item project-admin-item';
       row.innerHTML = `
         <div class="project-summary"><strong>${esc(p.code)} — ${esc(p.name)}</strong><div class="meta">${p.active === false ? 'Retiré' : 'Actif'}</div></div>
-        <div class="admin-row-actions"><button class="secondary edit-item" type="button">Modifier</button><button class="secondary toggle-item" type="button">${p.active === false ? 'Réactiver' : 'Retirer'}</button></div>
+        <div class="admin-row-actions"><button class="secondary edit-item" type="button">Modifier</button><button class="secondary toggle-item" type="button">${p.active === false ? 'Réactiver' : 'Retirer'}</button><button class="secondary delete-item" type="button" style="border-color:#d92d20;color:#b42318;background:#fff4f2">Supprimer</button></div>
         <div class="project-edit-form hidden" style="width:100%;margin-top:10px">
           <div class="project-add">
             <input class="edit-code" value="${esc(p.code)}" placeholder="N° affaire" />
@@ -425,6 +464,23 @@
           await refreshManagement();
         } catch (error) {
           alert('Impossible de modifier le chantier : ' + (error.message || error));
+        }
+      };
+      row.querySelector('.delete-item').onclick = async () => {
+        if (!confirm(`Supprimer le chantier ${p.code} — ${p.name} ?\n\nIl disparaîtra des listes mais restera conservé dans les anciennes feuilles.`)) return;
+        try {
+          if (!isCloud) {
+            const db = demoDb();
+            const found = (db.projects || []).find(x => x.id === p.id);
+            if (found) { found.active = false; found.deleted = true; }
+            saveDemoDb(db);
+          } else {
+            const {error} = await sb.from('ljs_projects').update({active:false, deleted:true}).eq('id', p.id);
+            if (error) throw error;
+          }
+          await refreshManagement();
+        } catch (error) {
+          alert('Impossible de supprimer le chantier : ' + (error.message || error));
         }
       };
       box.appendChild(row);
