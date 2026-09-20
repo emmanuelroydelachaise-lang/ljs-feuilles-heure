@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260920-hidden-admin-1';
+  const VERSION = '20260920-remove-administrative-1';
   const CLEAN_KEY = 'ljs_pwa_clean_version';
   let deferredPrompt = null;
 
@@ -169,15 +169,6 @@
     }
   }
 
-  function loadAdministrativeArchives() {
-    if (document.querySelector('script[data-administrative-archives]')) return;
-    const script = document.createElement('script');
-    script.src = `./administrative-archives.js?v=${VERSION}`;
-    script.dataset.administrativeArchives = '1';
-    script.async = false;
-    document.head.appendChild(script);
-  }
-
   function installButton() {
     return document.getElementById('installBtn');
   }
@@ -247,7 +238,6 @@
     loadTechnicianState();
     loadAdminVehicles();
     loadAdminArchiveAssets();
-    loadAdministrativeArchives();
 
     let btn = installButton();
     if (btn) {
@@ -271,6 +261,5 @@
     loadTechnicianState();
     loadAdminVehicles();
     loadAdminArchiveAssets();
-    loadAdministrativeArchives();
   });
 })();
