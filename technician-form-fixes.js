@@ -167,7 +167,7 @@
           !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && !entry.project_id)
         );
         const invalidOther = state.sheet.days.some(day =>
-          !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && entry.project_id === OTHER_PROJECT_ID && (!String(entry.manual_project_code || '').trim() || !String(entry.manual_project_name || '').trim()))
+          !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && entry.project_id === OTHER_PROJECT_ID && !String(entry.manual_project_name || '').trim())
         );
 
         if (missingHours.length || missingZones.length || missingProjects.length) {
@@ -181,7 +181,7 @@
         }
 
         if (invalidOther) {
-          alert('Pour « Chantier libre / Dépannage », renseigne le N° chantier et l’intitulé.');
+          alert('Pour « Chantier libre / Dépannage », renseigne au minimum l’intitulé. Le N° chantier est facultatif.');
           return;
         }
 
