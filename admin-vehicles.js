@@ -26,7 +26,7 @@
     btn.id = 'adminManagementBtn';
     btn.className = 'primary';
     btn.type = 'button';
-    btn.textContent = 'Administration';
+    btn.textContent = 'Administratif';
     btn.onclick = showAdministrationManagement;
     actions.insertBefore(btn, logoutBtn);
   }
@@ -34,7 +34,7 @@
   function renderManagementShell() {
     app.innerHTML = `
       <section class="toolbar card">
-        <div><div class="small muted">Mode</div><strong>Administration</strong></div>
+        <div><div class="small muted">Mode</div><strong>Administratif</strong></div>
         <div class="admin-row-actions">
           <button id="managementBackBtn" class="secondary" type="button">Retour Responsable</button>
           <button id="managementLogoutBtn" class="ghost" type="button">Quitter</button>
@@ -104,7 +104,7 @@
       await renderManagementProjects();
     } catch (error) {
       console.error(error);
-      alert('Impossible de charger l’espace Administration : ' + (error.message || error));
+      alert('Impossible de charger l’espace Administratif : ' + (error.message || error));
     }
   }
 
