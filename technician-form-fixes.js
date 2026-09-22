@@ -96,7 +96,7 @@
   function recapProjectLabel(entry) {
     if (entry.project_id === OTHER_PROJECT_ID) {
       const code = String(entry.manual_project_code || '').trim();
-      const name = String(entry.manual_project_name || '').trim() || 'Chantier autre';
+      const name = String(entry.manual_project_name || '').trim() || 'Chantier libre / Dépannage';
       return code ? `${code} — ${name}` : name;
     }
     const project = (state?.projects || []).find(p => p.id === entry.project_id);
@@ -167,7 +167,7 @@
           !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && !entry.project_id)
         );
         const invalidOther = state.sheet.days.some(day =>
-          !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && entry.project_id === OTHER_PROJECT_ID && !String(entry.manual_project_name || '').trim())
+          !day.absent && (day.entries || []).some(entry => Number(entry.hours || 0) > 0 && entry.project_id === OTHER_PROJECT_ID && (!String(entry.manual_project_code || '').trim() || !String(entry.manual_project_name || '').trim()))
         );
 
         if (missingHours.length || missingZones.length || missingProjects.length) {
@@ -181,7 +181,7 @@
         }
 
         if (invalidOther) {
-          alert('Pour « Chantier autre », renseigne le nom du chantier ou de l’intervention.');
+          alert('Pour « Chantier libre / Dépannage », renseigne le N° chantier et l’intitulé.');
           return;
         }
 
