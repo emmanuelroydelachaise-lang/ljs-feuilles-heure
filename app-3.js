@@ -159,7 +159,7 @@ async function renderTechnicianArchives() {
           <strong>Semaine ${weekNumber(sheet.week_start)} — ${archiveWeekPeriod(sheet.week_start)}</strong>
           <div class="meta">Validée par le responsable${approved ? ` le ${approved}` : ''}</div>
         </div>
-        <div class="tech-archive-actions"><button class="secondary tech-open-archive" type="button">Ouvrir</button><button class="primary tech-edit-archive" type="button">Modifier</button></div>`;
+        <div class="tech-archive-actions"><button class="secondary tech-open-archive" type="button">Ouvrir</button><button class="primary tech-edit-archive" type="button">MODIFIER LA FEUILLE</button></div>`;
 
       row.querySelector('.tech-edit-archive').onclick = () => reopenTechnicianArchivedSheet(sheet);
 
