@@ -3,7 +3,8 @@
 Application PWA LJS Energies pour la saisie, signature, validation et impression des feuilles d'heures hebdomadaires.
 
 - Techniciens sur mobile
-- Semaine du lundi au dimanche
+- Technicien : saisie du lundi au vendredi
+- Responsable : samedi conservé pour ajout/correction si nécessaire
 - Zone trajet 1 à 5
 - Signature technicien
 - Validation responsable

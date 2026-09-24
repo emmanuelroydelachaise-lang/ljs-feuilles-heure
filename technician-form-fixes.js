@@ -36,7 +36,7 @@
   function clearAutomaticProjectsForNewSheet() {
     const sheet = state?.sheet;
     if (!sheet || sheet.status !== 'draft' || sheet.id) return;
-    (sheet.days || []).slice(0, 6).forEach(day => {
+    (sheet.days || []).slice(0, 5).forEach(day => {
       (day.entries || []).forEach(entry => {
         if (Number(entry.hours || 0) <= 0 && !String(entry.manual_project_name || '').trim()) entry.project_id = '';
       });
@@ -107,7 +107,7 @@
   }
 
   function buildSubmissionRecap(sheet) {
-    const days = (sheet.days || []).slice(0, 6);
+    const days = (sheet.days || []).slice(0, 5);
     const projectTotals = new Map();
 
     days.forEach(day => {

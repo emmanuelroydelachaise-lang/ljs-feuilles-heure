@@ -29,7 +29,7 @@
     setBusy(button, true);
     try {
       const fullSheet = await loadFinalArchiveSheet(summary.id, currentProfile.full_name, summary.week_start);
-      await window.downloadTimesheetPdf(fullSheet, currentProfile.full_name);
+      await window.downloadTimesheetPdf(fullSheet, currentProfile.full_name, true);
     } catch (error) {
       alert('Impossible de créer le PDF : ' + (error.message || error));
     } finally {

@@ -109,7 +109,7 @@
     return `Feuille_heures_${safeFilenamePart(technicianName)}_S${week}_${year}.pdf`;
   }
 
-  async function downloadTimesheetPdf(sheet, technicianName) {
+  async function downloadTimesheetPdf(sheet, technicianName, technicianOnly = false) {
     if (!sheet) throw new Error('Feuille introuvable.');
     if (typeof window.printTimesheet !== 'function') throw new Error('Le modèle de feuille n’est pas disponible.');
 
@@ -121,7 +121,7 @@
     let stage = null;
 
     try {
-      window.printTimesheet(sheet, technicianName);
+      window.printTimesheet(technicianOnly ? {...sheet, days:(sheet.days||[]).slice(0,5)} : sheet, technicianName);
       const source = document.querySelector('#printArea .exact-print-sheet');
       if (!source) throw new Error('Impossible de préparer la feuille PDF.');
 

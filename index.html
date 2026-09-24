@@ -15,6 +15,10 @@
   <link rel="stylesheet" href="technician-archives.css?v=20260916-tech-archives-1" />
   <link rel="stylesheet" href="leave-requests.css?v=20260918-leave-red-1" />
   <link rel="stylesheet" href="admin-leave-requests.css?v=20260918-leave-red-1" />
+  <style id="tech-weekdays-only">
+    /* Technicien : lundi à vendredi uniquement. #adminDays reste inchangé pour le responsable. */
+    #days > .day-card:nth-child(n+6) { display: none !important; }
+  </style>
 </head>
 <body>
   <header class="app-header">
@@ -142,7 +146,7 @@
   <script src="app-1.js?v=20260915-pwa-8"></script>
   <script src="app-2.js?v=20260918-admin-enter-1"></script>
   <script src="hidden-admin-access.js?v=20260920-hidden-admin-1"></script>
-  <script src="app-3.js?v=20260922-chantier-libre-1"></script>
+  <script src="app-3.js?v=20260924-tech-mon-fri-all-1"></script>
   <script src="app-4.js?v=20260915-pwa-8"></script>
   <script src="app-5.js?v=20260915-pwa-8"></script>
   <script src="app-6.js?v=20260916-print-hours-3"></script>
@@ -155,8 +159,8 @@
   <script src="admin-projects.js?v=20260915-pwa-8"></script>
   <script src="interim-agency.js?v=20260915-pwa-8"></script>
   <script src="print-logo-fix.js?v=20260915-pwa-8"></script>
-  <script src="pdf-export.js?v=20260916-archive-pdf-1"></script>
-  <script src="archive-pdf-buttons.js?v=20260916-archive-pdf-3"></script>
-  <script src="pwa-clean.js?v=20260920-remove-administrative-1"></script>
+  <script src="pdf-export.js?v=20260924-tech-mon-fri-all-1"></script>
+  <script src="archive-pdf-buttons.js?v=20260924-tech-mon-fri-all-1"></script>
+  <script src="pwa-clean.js?v=20260924-tech-mon-fri-all-1"></script>
 </body>
 </html>

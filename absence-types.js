@@ -262,7 +262,7 @@
     let text = String(message || '');
     if (!text.includes('RÉCAPITULATIF AVANT VALIDATION')) return text;
 
-    (sheet?.days || []).slice(0, 6).forEach(day => {
+    (sheet?.days || []).slice(0, 5).forEach(day => {
       if (!day.absent) return;
       const label = String(day.name || '').replace(/^./, char => char.toUpperCase());
       if (!label) return;
