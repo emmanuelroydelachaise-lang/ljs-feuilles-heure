@@ -172,6 +172,59 @@ html body .day-title h3::first-letter{text-transform:uppercase}
   html body .actions.three-actions .secondary{min-height:44px;font-size:.92rem}
 }
 }
+
+@media screen {
+html body .admin-management-nav{flex:none;width:auto}
+html body .toolbar .admin-row-actions .ghost{width:auto;flex:none}
+/* Semaine lisible avec flèches */
+html body .lx-weeknav{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+html body .lx-weeknav button{width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--text);font-size:22px;line-height:1;flex:none}
+html body .lx-wl{flex:1;text-align:center;font:600 1.3rem/1.15 "Barlow Semi Condensed",sans-serif}
+html body .lx-wl small{display:block;font:400 .9rem "Barlow",sans-serif;color:var(--muted);margin-top:2px}
+
+/* Onglets responsable */
+html body .lx-adminnav{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:4px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px;margin:0 0 12px}
+html body .lx-adminnav button{border:0;background:transparent;color:var(--muted);border-radius:9px;min-height:46px;font-weight:600;font-size:.95rem;padding:6px 8px;line-height:1.15}
+html body .lx-adminnav button[aria-pressed="true"]{background:var(--primary);color:#fff}
+html body #app:has(.lx-adminnav) #adminManagementBtn,html body #dashboardArchivesBtn{display:none!important}
+html body #app > .lx-off{display:none!important}
+
+/* Éditeur ouvert : on masque la liste pour se concentrer sur la feuille */
+html body #app:has(#adminEditor:not(.hidden)) #adminListCard,html body #app:has(#adminEditor:not(.hidden)) #adminDashboardCard{display:none!important}
+html body .admin-editor-head h2{font-size:1.45rem}
+html body .admin-day-block{border-left:5px solid var(--primary);border-top:1px solid var(--line);border-radius:0 10px 10px 0;padding:12px 0 12px 12px;margin-top:14px;background:#fbfdfe}
+html body .admin-day-block.absent{border-left-color:var(--amber);background:#fffaf1}
+html body .admin-day-block [data-admin-day-total]{font-family:"Barlow Semi Condensed",sans-serif;font-size:1.1rem;background:var(--soft);border-radius:999px;padding:3px 12px}
+html body #adminDays .work-row{grid-template-columns:1fr 150px 44px}
+html body #adminDays .zone-only{grid-template-columns:1fr}
+html body .admin-red-note{border-radius:10px}
+@media (max-width:640px){
+  html body #adminDays .work-row{grid-template-columns:1fr 44px}
+  html body #adminDays .work-row > div:first-child{grid-column:1/-1}
+  html body .admin-edit-actions{grid-template-columns:1fr 1fr;gap:8px}
+  html body .admin-edit-actions .primary{grid-column:1/-1}
+  html body .lx-adminnav button{font-size:.88rem}
+}
+
+/* Liste des feuilles : statut en couleur */
+html body .admin-sheet-row{border-left-width:5px}
+html body .admin-sheet-row.lx-s-submitted{border-left-color:var(--primary);background:#f5faff}
+html body .admin-sheet-row.lx-s-approved{border-left-color:#1e9c68}
+html body .admin-sheet-row.lx-s-draft{border-left-color:var(--amber)}
+html body .admin-sheet-row.lx-s-none{border-left-color:#c2412d;opacity:.9}
+html body .admin-sheet-row strong{font-size:1.05rem}
+html body .admin-sheet-row.lx-s-submitted .meta{color:var(--primary-dark);font-weight:600}
+html body .admin-row-actions button{min-height:42px;padding:8px 12px;font-size:.92rem}
+html body #adminListCard > .field-row{grid-template-columns:1fr auto;align-items:end}
+@media (max-width:640px){ html body #adminListCard > .field-row{grid-template-columns:1fr auto} }
+
+/* Tableau de bord */
+html body .dashboard-stat[data-kind="pending"]{border-left:4px solid var(--amber)}
+html body .dashboard-stat[data-kind="approved"]{border-left:4px solid #1e9c68}
+html body .dashboard-stat[data-kind="missing"]{border-left:4px solid #c2412d}
+html body .dashboard-stat[data-kind="received"]{border-left:4px solid var(--primary)}
+}
+
   </style>
 </head>
 <body>
@@ -416,7 +469,7 @@ html body .day-title h3::first-letter{text-transform:uppercase}
   function fire(el, type){ el.dispatchEvent(new Event(type, { bubbles:true })); }
 
   function enhanceZones(root){
-    root.querySelectorAll('select.zone').forEach(selEl => {
+    root.querySelectorAll('select.zone, select.admin-zone').forEach(selEl => {
       let box = selEl.nextElementSibling;
       if (!box || !box.classList.contains('lx-zones')) {
         box = document.createElement('div'); box.className = 'lx-zones'; box.setAttribute('role','group'); box.setAttribute('aria-label','Zone trajet');
@@ -500,6 +553,9 @@ html body .day-title h3::first-letter{text-transform:uppercase}
     try {
       const days = document.getElementById('days');
       if (days) { enhanceZones(days); enhanceHours(days); enhanceStrip(); }
+      const adays = document.getElementById('adminDays');
+      if (adays) { enhanceZones(adays); enhanceHours(adays); }
+      if (window.__lxAdmin) window.__lxAdmin();
     } catch (e) { console.warn('Affichage semaine : ', e); }
   }
   function schedule(){ if (!queued) { queued = true; requestAnimationFrame(run); } }
@@ -510,6 +566,109 @@ html body .day-title h3::first-letter{text-transform:uppercase}
   document.addEventListener('change', schedule, true);
   schedule();
 })();
+
+/* ===== Responsable : navigation par onglets, semaine lisible, statuts colorés =====
+   Couche d'affichage uniquement : les boutons d'origine restent ceux qui agissent. */
+(() => {
+  const MON = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  let tab = 'week', editorOpen = false;
+
+  // --- Semaines : flèches précédente / suivante + libellé clair ---
+  function mondayOf(v){
+    const m = /^(\d{4})-W(\d{2})$/.exec(v || ''); if (!m) return null;
+    const y = +m[1], w = +m[2];
+    const jan4 = new Date(y, 0, 4, 12); const day = (jan4.getDay() + 6) % 7;
+    const mon = new Date(jan4); mon.setDate(jan4.getDate() - day + (w - 1) * 7); return mon;
+  }
+  function weekValue(d){
+    const t = new Date(d); t.setHours(12,0,0,0); t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+    const y = t.getFullYear(); const jan4 = new Date(y,0,4,12);
+    const w = 1 + Math.round(((t - jan4) / 864e5 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
+    return `${y}-W${String(w).padStart(2,'0')}`;
+  }
+  function label(v){
+    const mon = mondayOf(v); if (!mon) return 'Choisir une semaine';
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const cur = weekValue(new Date()) === v;
+    return `Semaine ${+v.slice(-2)}<small>du ${mon.getDate()} ${MON[mon.getMonth()]} au ${sun.getDate()} ${MON[sun.getMonth()]} ${sun.getFullYear()}${cur ? ', semaine en cours' : ''}</small>`;
+  }
+  function weekNav(input){
+    const row = input.closest('.field-row') || input.parentElement; if (!row) return;
+    let nav = row.previousElementSibling;
+    if (!nav || !nav.classList.contains('lx-weeknav')) {
+      nav = document.createElement('div'); nav.className = 'lx-weeknav';
+      nav.innerHTML = `<button type="button" data-d="-7" aria-label="Semaine précédente">‹</button><div class="lx-wl"></div><button type="button" data-d="7" aria-label="Semaine suivante">›</button>`;
+      row.before(nav);
+      nav.onclick = e => {
+        const b = e.target.closest('button[data-d]'); if (!b) return;
+        const mon = mondayOf(input.value) || new Date(); mon.setDate(mon.getDate() + Number(b.dataset.d));
+        input.value = weekValue(mon); input.dispatchEvent(new Event('change', { bubbles:true }));
+      };
+    }
+    const html = label(input.value); const l = nav.querySelector('.lx-wl');
+    if (l.innerHTML !== html) l.innerHTML = html;
+  }
+
+  // --- Onglets responsable ---
+  function sections(){
+    return {
+      week: ['adminDashboardCard','adminListCard','adminEditor'].map(id => document.getElementById(id)).filter(Boolean),
+      archives: [document.getElementById('adminArchivesCard')].filter(Boolean)
+    };
+  }
+  function applyTab(){
+    const s = sections();
+    s.week.forEach(el => { const off = tab !== 'week'; if (el.classList.contains('lx-off') !== off) el.classList.toggle('lx-off', off); });
+    s.archives.forEach(el => { const off = tab !== 'archives'; if (el.classList.contains('lx-off') !== off) el.classList.toggle('lx-off', off); });
+    document.querySelectorAll('.lx-adminnav button[data-t]').forEach(b => { const on = String(b.dataset.t === tab); if (b.getAttribute('aria-pressed') !== on) b.setAttribute('aria-pressed', on); });
+  }
+  async function goTab(t){
+    if (t === 'admin') { document.getElementById('adminManagementBtn')?.click(); return; }
+    tab = t;
+    if (t === 'archives' && !document.getElementById('adminArchivesCard') && typeof window.renderAdminArchives === 'function') {
+      try { await window.renderAdminArchives(); } catch (_) {}
+    }
+    applyTab(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function adminNav(){
+    const list = document.getElementById('adminListCard'); if (!list) return;
+    const toolbar = document.querySelector('#app > .toolbar.card'); if (!toolbar) return;
+    let nav = document.querySelector('.lx-adminnav');
+    if (!nav) {
+      tab = 'week';
+      nav = document.createElement('nav'); nav.className = 'lx-adminnav'; nav.setAttribute('aria-label','Espace responsable');
+      nav.innerHTML = `<button type="button" data-t="week">Feuilles de la semaine</button><button type="button" data-t="archives">Archives</button><button type="button" data-t="admin">Administratif</button>`;
+      toolbar.after(nav);
+      nav.onclick = e => { const b = e.target.closest('button[data-t]'); if (b) goTab(b.dataset.t); };
+    }
+    applyTab();
+  }
+
+  // --- Statut des feuilles dans la liste ---
+  function rowStatus(){
+    document.querySelectorAll('.admin-sheet-row').forEach(r => {
+      const t = (r.querySelector('.meta')?.textContent || '');
+      const st = /À valider/.test(t) ? 'submitted' : /Validée/.test(t) ? 'approved' : /En cours/.test(t) ? 'draft' : 'none';
+      if (r.dataset.lxSt !== st) { r.classList.remove('lx-s-submitted','lx-s-approved','lx-s-draft','lx-s-none'); r.classList.add('lx-s-' + st); r.dataset.lxSt = st; }
+    });
+  }
+
+  // --- Éditeur ouvert : on remonte en haut de page ---
+  function editorFocus(){
+    const ed = document.getElementById('adminEditor');
+    const open = !!ed && !ed.classList.contains('hidden') && ed.children.length > 0;
+    if (open && !editorOpen) window.scrollTo({ top: 0 });
+    editorOpen = open;
+  }
+
+  window.__lxAdmin = () => {
+    try {
+      ['weekInput','adminWeekInput'].forEach(id => { const i = document.getElementById(id); if (i) weekNav(i); });
+      adminNav(); rowStatus(); editorFocus();
+    } catch (e) { console.warn('Affichage responsable : ', e); }
+  };
+})();
+
 </script>
 </body>
 </html>
