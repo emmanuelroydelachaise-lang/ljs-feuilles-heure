@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0668a9" />
+  <meta name="theme-color" content="#ffffff" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>LJS Energies — Feuilles d'heures</title>
@@ -19,7 +19,214 @@
     /* Technicien : lundi à vendredi uniquement. #adminDays reste inchangé pour le responsable. */
     #days > .day-card:nth-child(n+6) { display: none !important; }
   </style>
-  </head>
+    <!-- Nouveau design LJS : polices + thème (apparence uniquement) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" />
+  <style id="ljs-nouveau-design">
+/* ===== Thème LJS « nouveau design » : apparence uniquement, aucune logique modifiée ===== */
+@media screen {
+html body{
+  --bg:#eef3f6; --card:#fff; --text:#12324a; --muted:#5d7182; --line:#d3dde4;
+  --primary:#0668a9; --primary-dark:#0a4f80; --soft:#e6f0f7; --amber:#f0a31a;
+  background:var(--bg); color:var(--text);
+  font-family:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:16px; line-height:1.45;
+}
+html body h1,html body h2,html body h3,html body .day-title h3{font-family:"Barlow Semi Condensed","Barlow",system-ui,sans-serif;font-weight:600;letter-spacing:.005em}
+html body h1{font-size:1.65rem;line-height:1.15}
+html body h2{font-size:1.25rem}
+html body .container{width:min(620px,100%);padding:14px 16px 110px}
+
+/* En-tête */
+html body .app-header{padding:8px 16px;box-shadow:none}
+html body .brand{font-family:Arial,sans-serif}
+html body #installBtn{border-radius:999px;border:1px solid var(--line);color:var(--primary);background:#fff;font-weight:600;font-size:.88rem;min-height:38px;padding:6px 14px}
+
+/* Cartes */
+html body .card{border-radius:14px;border:1px solid var(--line);box-shadow:none;padding:16px}
+html body .toolbar.card{background:transparent;border:0;padding:4px 2px 8px}
+html body .toolbar strong{font-family:"Barlow Semi Condensed",sans-serif;font-size:1.3rem;font-weight:600}
+
+/* Champs */
+html body label{font-size:.88rem;font-weight:600;color:var(--muted)}
+html body input,html body select,html body textarea{border:1px solid #c9d5dd;border-radius:10px;min-height:48px;background:#fff;color:var(--text)}
+html body input:focus,html body select:focus,html body textarea:focus{outline:3px solid color-mix(in srgb,var(--amber) 70%,transparent);outline-offset:1px;border-color:var(--primary)}
+html body input[type=checkbox]{min-height:0}
+
+/* Boutons */
+html body button{border-radius:10px;min-height:48px;font-weight:600}
+html body button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+html body .primary{background:var(--primary);color:#fff;border:1px solid var(--primary)}
+html body .primary:hover{background:var(--primary-dark)}
+html body .secondary{background:#fff;color:var(--primary-dark);border:1px solid #c6d6e1}
+html body .secondary:hover{background:var(--soft)}
+html body .ghost{border-radius:999px;border:1px solid var(--line);color:var(--primary-dark);background:#fff;min-height:40px;padding:8px 16px}
+html body .link-btn{border:0;background:none}
+
+/* Statuts */
+html body .badge,html body .leave-status{border-radius:999px;font-weight:600;font-size:.82rem;padding:5px 11px}
+html body .badge.submitted{color:var(--primary-dark);background:color-mix(in srgb,var(--primary) 16%,#fff)}
+html body #weekTotal{font-family:"Barlow Semi Condensed",sans-serif;font-size:2rem;font-weight:700;line-height:1}
+
+/* Onglets */
+html body .tech-tabs,html body .admin-leave-tabs,html body .admin-archive-tabs{background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+html body .tech-tab,html body .admin-leave-tab,html body .admin-archive-tab{background:transparent;border:0;color:var(--muted);border-radius:9px;font-weight:600;min-height:44px}
+html body .tech-tab.active,html body .admin-leave-tab.active,html body .admin-archive-tab.active{background:var(--primary);color:#fff}
+
+/* Jours */
+html body .day-card{border-left:5px solid var(--primary)}
+html body .day-card.absent{border-left-color:var(--amber);background:#fffaf1;border-color:#f1dcb4}
+html body .day-title h3{font-size:1.2rem}
+html body .day-total{font-family:"Barlow Semi Condensed",sans-serif;font-size:1.15rem;font-weight:700;background:var(--soft);border-radius:999px;padding:3px 12px}
+html body .work-row .remove{border-radius:10px;min-height:48px}
+html body .add-row,html body .admin-add-row{border:1px dashed var(--primary);background:transparent;color:var(--primary)}
+html body .absence-line{border-radius:10px}
+
+/* Signature */
+html body .signature-pad{border:1px dashed #b9c7d1;background:#f7fafc;border-radius:12px}
+
+/* Barre d'actions collée en bas */
+html body .actions.card,html body .admin-edit-actions{background:#fff;border:1px solid var(--line);box-shadow:0 -6px 24px rgba(18,50,74,.12);bottom:calc(8px + env(safe-area-inset-bottom,0px));padding:10px}
+html body .actions .primary,html body .admin-edit-actions .primary{min-height:52px;font-size:1.02rem}
+
+/* Listes responsable */
+html body .admin-item,html body .tech-archive-item,html body .leave-request-item,html body .admin-leave-request-item,html body .archive-tech-group{border-radius:12px;border:1px solid var(--line);background:#fff}
+html body .admin-item{border-left:4px solid var(--line)}
+html body .admin-item .meta,html body .meta{font-size:.88rem}
+html body .dashboard-stat{border-radius:12px;box-shadow:none}
+html body .dashboard-stat .dashboard-number{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:2rem}
+html body .dashboard-stat .dashboard-label{font-weight:600}
+html body .leave-title{background:var(--primary);font-style:normal;font-family:"Barlow Semi Condensed",sans-serif;font-weight:600;border-radius:12px}
+
+/* ===== Connexion : liste de noms + pavé numérique ===== */
+html body .lx-hidden{display:none!important}
+html body .lx-search{margin:0 0 10px}
+html body .lx-people{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+html body .lx-people li+li{border-top:1px solid var(--line)}
+html body .lx-people button{width:100%;display:flex;align-items:center;gap:12px;background:none;border:0;border-radius:0;padding:10px 14px;min-height:60px;text-align:left;color:var(--text);font-weight:500}
+html body .lx-people button:active{background:var(--soft)}
+html body .lx-ini{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--primary-dark);font:600 15px "Barlow Semi Condensed",sans-serif;flex:none}
+html body .lx-name{flex:1}
+html body .lx-tag{font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;background:color-mix(in srgb,var(--amber) 22%,#fff);color:#8a5a00}
+html body .lx-pin{text-align:center}
+html body .lx-pin .lx-ini{width:56px;height:56px;font-size:20px;margin:4px auto 6px}
+html body .lx-who{font:600 1.35rem/1.2 "Barlow Semi Condensed",sans-serif;margin:0}
+html body .lx-sub{color:var(--muted);margin:2px 0 0}
+html body .lx-dots{display:flex;gap:14px;justify-content:center;margin:20px 0}
+html body .lx-dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--primary)}
+html body .lx-dots i.on{background:var(--primary)}
+html body .lx-dots.shake{animation:lxshake .35s}
+@keyframes lxshake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+html body .lx-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto}
+html body .lx-pad button{height:64px;border:1px solid var(--line);background:#fff;color:var(--text);font:600 26px "Barlow Semi Condensed",sans-serif;border-radius:14px}
+html body .lx-pad button:active{background:var(--soft)}
+html body .lx-pad .lx-ghost{border-color:transparent;background:none;font:500 15px "Barlow",sans-serif;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){html body .lx-dots.shake{animation:none}}
+}
+
+@media screen {
+/* Bande des jours */
+html body .lx-strip{margin-top:14px}
+html body .lx-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+html body .lx-tile{position:relative;height:96px;border-radius:10px;border:1px solid var(--line);background:#fff;overflow:hidden;padding:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:var(--text);font-weight:600}
+html body .lx-tile .lvl{position:absolute;left:0;right:0;bottom:0;background:#d8e8f3;transition:height .3s ease}
+html body .lx-tile.full .lvl{background:#a9cbe3}
+html body .lx-tile.over .lvl{background:#f7cf86}
+html body .lx-tile .dn,html body .lx-tile .dh{position:relative;z-index:1}
+html body .lx-tile .dn{padding-top:7px;font:600 13px/1.1 "Barlow Semi Condensed",sans-serif;color:var(--muted);text-transform:capitalize}
+html body .lx-tile .dn b{display:block;font-size:21px;color:var(--text)}
+html body .lx-tile .dh{padding-bottom:7px;font:700 16px "Barlow Semi Condensed",sans-serif}
+html body .lx-tile.abs{background:#fff6e6}
+html body .lx-tile.abs .dh{color:#8a5a00}
+html body .lx-tile.sel{border:2px solid var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
+html body .lx-all{display:block;margin:8px auto 0;background:none;border:0;color:var(--primary);font-weight:600;min-height:40px}
+html body #days > .day-card.lx-off{display:none!important}
+
+/* Zone trajet en boutons */
+html body .lx-zones{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid #c9d5dd;border-radius:10px;overflow:hidden;background:#fff}
+html body .lx-zones button{border:0;border-radius:0;min-height:48px;background:#fff;color:var(--text);font:600 18px "Barlow Semi Condensed",sans-serif}
+html body .lx-zones button+button{border-left:1px solid #c9d5dd}
+html body .lx-zones button[aria-pressed="true"]{background:var(--primary);color:#fff}
+html body .lx-zones button:disabled{opacity:.45}
+html body #days .zone-only{grid-template-columns:1fr}
+
+/* Heures avec − / + */
+html body .lx-hasstep{display:grid;grid-template-columns:44px minmax(56px,1fr) 44px;align-items:end;gap:0}
+html body .lx-hasstep > label{grid-column:1/-1}
+html body .lx-hasstep input.hours{border-radius:0;text-align:center;font:700 18px "Barlow Semi Condensed",sans-serif;border-left:0;border-right:0;-moz-appearance:textfield}
+html body .lx-hasstep input.hours::-webkit-inner-spin-button,html body .lx-hasstep input.hours::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+html body .lx-stepbtn{min-height:48px;height:48px;padding:0;border:1px solid #c9d5dd;background:#f2f6f9;color:var(--text);font:600 22px "Barlow Semi Condensed",sans-serif}
+html body .lx-hasstep .lx-stepbtn:first-of-type{border-radius:10px 0 0 10px}
+html body .lx-hasstep .lx-stepbtn:last-of-type{border-radius:0 10px 10px 0}
+html body #days .work-row{grid-template-columns:1fr 150px 44px}
+@media (max-width:640px){
+  html body #days .work-row{grid-template-columns:1fr 44px}
+  html body #days .work-row > div:first-child{grid-column:1/-1}
+}
+}
+@media screen {
+html body .day-title h3::first-letter{text-transform:uppercase}
+@media (max-width:640px){
+  html body .actions.three-actions{grid-template-columns:1fr 1fr;gap:8px}
+  html body .actions.three-actions .primary{grid-column:1/-1}
+  html body .actions.three-actions .secondary{min-height:44px;font-size:.92rem}
+}
+}
+
+@media screen {
+html body .admin-management-nav{flex:none;width:auto}
+html body .toolbar .admin-row-actions .ghost{width:auto;flex:none}
+/* Semaine lisible avec flèches */
+html body .lx-weeknav{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+html body .lx-weeknav button{width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--text);font-size:22px;line-height:1;flex:none}
+html body .lx-wl{flex:1;text-align:center;font:600 1.3rem/1.15 "Barlow Semi Condensed",sans-serif}
+html body .lx-wl small{display:block;font:400 .9rem "Barlow",sans-serif;color:var(--muted);margin-top:2px}
+
+/* Onglets responsable */
+html body .lx-adminnav{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:4px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px;margin:0 0 12px}
+html body .lx-adminnav button{border:0;background:transparent;color:var(--muted);border-radius:9px;min-height:46px;font-weight:600;font-size:.95rem;padding:6px 8px;line-height:1.15}
+html body .lx-adminnav button[aria-pressed="true"]{background:var(--primary);color:#fff}
+html body #app:has(.lx-adminnav) #adminManagementBtn,html body #dashboardArchivesBtn{display:none!important}
+html body #app > .lx-off{display:none!important}
+
+/* Éditeur ouvert : on masque la liste pour se concentrer sur la feuille */
+html body #app:has(#adminEditor:not(.hidden)) #adminListCard,html body #app:has(#adminEditor:not(.hidden)) #adminDashboardCard{display:none!important}
+html body .admin-editor-head h2{font-size:1.45rem}
+html body .admin-day-block{border-left:5px solid var(--primary);border-top:1px solid var(--line);border-radius:0 10px 10px 0;padding:12px 0 12px 12px;margin-top:14px;background:#fbfdfe}
+html body .admin-day-block.absent{border-left-color:var(--amber);background:#fffaf1}
+html body .admin-day-block [data-admin-day-total]{font-family:"Barlow Semi Condensed",sans-serif;font-size:1.1rem;background:var(--soft);border-radius:999px;padding:3px 12px}
+html body #adminDays .work-row{grid-template-columns:1fr 150px 44px}
+html body #adminDays .zone-only{grid-template-columns:1fr}
+html body .admin-red-note{border-radius:10px}
+@media (max-width:640px){
+  html body #adminDays .work-row{grid-template-columns:1fr 44px}
+  html body #adminDays .work-row > div:first-child{grid-column:1/-1}
+  html body .admin-edit-actions{grid-template-columns:1fr 1fr;gap:8px}
+  html body .admin-edit-actions .primary{grid-column:1/-1}
+  html body .lx-adminnav button{font-size:.88rem}
+}
+
+/* Liste des feuilles : statut en couleur */
+html body .admin-sheet-row{border-left-width:5px}
+html body .admin-sheet-row.lx-s-submitted{border-left-color:var(--primary);background:#f5faff}
+html body .admin-sheet-row.lx-s-approved{border-left-color:#1e9c68}
+html body .admin-sheet-row.lx-s-draft{border-left-color:var(--amber)}
+html body .admin-sheet-row.lx-s-none{border-left-color:#c2412d;opacity:.9}
+html body .admin-sheet-row strong{font-size:1.05rem}
+html body .admin-sheet-row.lx-s-submitted .meta{color:var(--primary-dark);font-weight:600}
+html body .admin-row-actions button{min-height:42px;padding:8px 12px;font-size:.92rem}
+html body #adminListCard > .field-row{grid-template-columns:1fr auto;align-items:end}
+@media (max-width:640px){ html body #adminListCard > .field-row{grid-template-columns:1fr auto} }
+
+/* Tableau de bord */
+html body .dashboard-stat[data-kind="pending"]{border-left:4px solid var(--amber)}
+html body .dashboard-stat[data-kind="approved"]{border-left:4px solid #1e9c68}
+html body .dashboard-stat[data-kind="missing"]{border-left:4px solid #c2412d}
+html body .dashboard-stat[data-kind="received"]{border-left:4px solid var(--primary)}
+}
+
+  </style>
+</head>
 <body>
   <header class="app-header">
     <div class="header-brand">
@@ -162,5 +369,306 @@
   <script src="pdf-export.js?v=20260924-tech-mon-fri-all-1"></script>
   <script src="archive-pdf-buttons.js?v=20260924-admin-archive-edit-fix-1"></script>
   <script src="pwa-clean.js?v=20261005-cfa-1"></script>
+<script id="ljs-nouveau-design-js">
+/* ===== Connexion tactile : s'appuie sur les champs existants (techSelect, pinInput, loginBtn) sans changer la logique ===== */
+(() => {
+  const ini = n => String(n).replace(/\(Intérim\)/,'').trim().split(/\s+/).map(p => p[0]).slice(0,2).join('').toUpperCase();
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function buildPad(host, input, submit, errEl, onBack){
+    let buf = '';
+    host.innerHTML = `<div class="lx-dots"><i></i><i></i><i></i><i></i></div><div class="lx-pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join('')}<button type="button" class="lx-ghost" data-k="back">Retour</button><button type="button" data-k="0">0</button><button type="button" class="lx-ghost" data-k="del" aria-label="Effacer le dernier chiffre">Effacer</button></div>`;
+    const dots = host.querySelector('.lx-dots');
+    const paint = () => [...dots.children].forEach((d,i) => d.classList.toggle('on', i < buf.length));
+    host.querySelector('.lx-pad').onclick = e => {
+      const k = e.target.closest('button')?.dataset.k; if (!k) return;
+      if (k === 'back') { buf=''; paint(); onBack && onBack(); return; }
+      if (k === 'del') { buf = buf.slice(0,-1); paint(); return; }
+      if (buf.length >= 4) return;
+      buf += k; paint();
+      if (buf.length === 4) {
+        input.value = buf;
+        if (errEl) errEl.textContent = '';
+        submit.click();
+        // Si un message d'erreur apparaît, on vide le code pour une nouvelle saisie
+        const t0 = Date.now();
+        const watch = setInterval(() => {
+          if (!document.body.contains(host)) return clearInterval(watch);
+          if (errEl && errEl.textContent.trim()) { clearInterval(watch); buf=''; input.value=''; paint(); dots.classList.add('shake'); setTimeout(()=>dots.classList.remove('shake'),400); }
+          else if (Date.now()-t0 > 15000) clearInterval(watch);
+        }, 150);
+      }
+    };
+    return { reset(){ buf=''; input.value=''; paint(); } };
+  }
+
+  function enhanceTech(){
+    const sel = document.getElementById('techSelect');
+    if (!sel || sel.dataset.lx || !sel.options.length) return;
+    sel.dataset.lx = '1';
+    const card = sel.closest('.login-card'), pin = document.getElementById('pinInput'), btn = document.getElementById('loginBtn'), err = document.getElementById('loginError');
+    const h1 = card.querySelector('h1'); if (h1) h1.textContent = 'Qui remplit sa feuille ?';
+    card.querySelectorAll('label').forEach(l => l.classList.add('lx-hidden'));
+    [sel, pin, btn].forEach(el => el.classList.add('lx-hidden'));
+    const list = document.createElement('div');
+    list.innerHTML = `<input class="lx-search" type="search" placeholder="Rechercher un nom" aria-label="Rechercher un nom"><ul class="lx-people"></ul>`;
+    const pinBox = document.createElement('div'); pinBox.className = 'lx-pin lx-hidden';
+    h1.after(list); list.after(pinBox);
+    const opts = () => [...sel.options].filter(o => o.value);
+    const render = q => {
+      const items = opts().filter(o => o.text.toLowerCase().includes(q.toLowerCase()));
+      list.querySelector('.lx-people').innerHTML = items.map(o => {
+        const interim = /\(Intérim\)/.test(o.text), name = o.text.replace(/\s*\(Intérim\)/,'');
+        return `<li><button type="button" data-v="${esc(o.value)}"><span class="lx-ini">${esc(ini(name))}</span><span class="lx-name">${esc(name)}</span>${interim?'<span class="lx-tag">Intérim</span>':''}</button></li>`;
+      }).join('') || `<li style="padding:16px;color:var(--muted)">Aucun nom ne correspond.</li>`;
+    };
+    render('');
+    list.querySelector('.lx-search').oninput = e => render(e.target.value);
+    let pad;
+    const back = () => { pinBox.classList.add('lx-hidden'); list.classList.remove('lx-hidden'); if (h1) h1.classList.remove('lx-hidden'); err.textContent=''; };
+    list.querySelector('.lx-people').onclick = e => {
+      const b = e.target.closest('button[data-v]'); if (!b) return;
+      sel.value = b.dataset.v;
+      const name = b.querySelector('.lx-name').textContent;
+      pinBox.innerHTML = `<div class="lx-ini">${esc(ini(name))}</div><p class="lx-who">${esc(name)}</p><p class="lx-sub">Code à 4 chiffres</p><div class="lx-padhost"></div>`;
+      pad = buildPad(pinBox.querySelector('.lx-padhost'), pin, btn, err, back);
+      pad.reset(); err.textContent='';
+      list.classList.add('lx-hidden'); if (h1) h1.classList.add('lx-hidden'); pinBox.classList.remove('lx-hidden');
+    };
+  }
+
+  function enhanceAdmin(){
+    const pin = document.getElementById('adminPinInput');
+    if (!pin || pin.dataset.lx) return;
+    pin.dataset.lx = '1';
+    const card = pin.closest('.login-card'), btn = document.getElementById('adminLoginBtn'), back = document.getElementById('backToTech'), err = document.getElementById('adminLoginError');
+    card.querySelectorAll('label').forEach(l => l.classList.add('lx-hidden'));
+    [pin, btn, back].forEach(el => el.classList.add('lx-hidden'));
+    const box = document.createElement('div'); box.className = 'lx-pin';
+    box.innerHTML = `<p class="lx-sub">Code responsable à 4 chiffres</p><div class="lx-padhost"></div>`;
+    (card.querySelector('h1') || card.firstChild).after(box);
+    buildPad(box.querySelector('.lx-padhost'), pin, btn, err, () => back.click());
+  }
+
+  const run = () => { try { enhanceTech(); enhanceAdmin(); } catch (e) { console.warn('Connexion tactile désactivée :', e); } };
+  const app = document.getElementById('app');
+  if (app) new MutationObserver(run).observe(app, { childList:true, subtree:true });
+  run();
+})();
+
+/* ===== Semaine : bande des 5 jours, un jour à la fois, boutons zone et heures =====
+   Couche d'affichage uniquement : les champs d'origine restent en place et reçoivent
+   les mêmes événements qu'une saisie manuelle. */
+(() => {
+  const todayTitle = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  let sel = null, weekKey = null, showAll = false, queued = false;
+
+  const parseH = t => Number(String(t||'').replace(/[^\d,.-]/g,'').replace(',','.')) || 0;
+  const setIf = (el, attr, val) => { if (el.getAttribute(attr) !== String(val)) el.setAttribute(attr, val); };
+
+  function fire(el, type){ el.dispatchEvent(new Event(type, { bubbles:true })); }
+
+  function enhanceZones(root){
+    root.querySelectorAll('select.zone, select.admin-zone').forEach(selEl => {
+      let box = selEl.nextElementSibling;
+      if (!box || !box.classList.contains('lx-zones')) {
+        box = document.createElement('div'); box.className = 'lx-zones'; box.setAttribute('role','group'); box.setAttribute('aria-label','Zone trajet');
+        box.innerHTML = [1,2,3,4,5].map(z => `<button type="button" data-z="${z}">${z}</button>`).join('');
+        selEl.after(box); selEl.classList.add('lx-hidden');
+        box.onclick = e => {
+          const b = e.target.closest('button[data-z]'); if (!b || selEl.disabled) return;
+          selEl.value = b.dataset.z; fire(selEl,'change'); sync();
+        };
+      }
+      const sync = () => box.querySelectorAll('button').forEach(b => {
+        setIf(b, 'aria-pressed', selEl.value === b.dataset.z);
+        if (b.disabled !== selEl.disabled) b.disabled = selEl.disabled;
+      });
+      sync();
+    });
+  }
+
+  function enhanceHours(root){
+    root.querySelectorAll('input.hours').forEach(inp => {
+      const wrap = inp.parentElement; if (!wrap) return;
+      if (!wrap.classList.contains('lx-hasstep')) {
+        wrap.classList.add('lx-hasstep');
+        const minus = document.createElement('button'); minus.type='button'; minus.className='lx-stepbtn'; minus.textContent='−'; minus.setAttribute('aria-label','Retirer une demi-heure');
+        const plus = document.createElement('button'); plus.type='button'; plus.className='lx-stepbtn'; plus.textContent='+'; plus.setAttribute('aria-label','Ajouter une demi-heure');
+        inp.before(minus); inp.after(plus);
+        const step = d => {
+          if (inp.disabled) return;
+          const v = Math.min(24, Math.max(0, (parseH(inp.value)) + d));
+          inp.value = String(v); fire(inp,'input'); fire(inp,'change');
+        };
+        minus.onclick = () => step(-0.5); plus.onclick = () => step(0.5);
+      }
+      wrap.querySelectorAll('.lx-stepbtn').forEach(b => { if (b.disabled !== inp.disabled) b.disabled = inp.disabled; });
+    });
+  }
+
+  function enhanceStrip(){
+    const days = document.getElementById('days');
+    const head = document.querySelector('.week-head');
+    if (!days || !head) return;
+    const cards = [...days.querySelectorAll(':scope > .day-card')].slice(0,5);
+    if (!cards.length) return;
+
+    const wk = (document.getElementById('weekInput')||{}).value || '';
+    if (wk !== weekKey) {
+      weekKey = wk; showAll = false;
+      const t = cards.findIndex(c => (c.querySelector('h3')?.textContent||'').trim().toLowerCase() === todayTitle.toLowerCase());
+      sel = t >= 0 ? t : 0;
+    }
+    if (sel >= cards.length) sel = 0;
+
+    let strip = head.querySelector('.lx-strip');
+    if (!strip) {
+      strip = document.createElement('div'); strip.className = 'lx-strip';
+      head.appendChild(strip);
+      strip.onclick = e => {
+        const b = e.target.closest('button'); if (!b) return;
+        if (b.dataset.all) { showAll = !showAll; }
+        else { sel = Number(b.dataset.i); showAll = false; }
+        schedule();
+        if (!b.dataset.all) setTimeout(() => cards[sel] && document.getElementById('days').querySelectorAll(':scope > .day-card')[sel]?.scrollIntoView({behavior:'smooth', block:'start'}), 30);
+      };
+    }
+    const html = '<div class="lx-tiles">' + cards.map((c,i) => {
+      const title = (c.querySelector('h3')?.textContent||'').trim();
+      const name = title.slice(0,3); const num = (title.match(/\d{1,2}/)||[''])[0];
+      const absent = c.classList.contains('absent');
+      const h = parseH(c.querySelector('.day-total')?.textContent);
+      const pct = absent ? 0 : Math.min(h/10,1)*100;
+      const cls = ['lx-tile', absent?'abs':'', h>=8?'full':'', h>10?'over':'', (!showAll && i===sel)?'sel':''].join(' ');
+      return `<button type="button" class="${cls}" data-i="${i}" aria-pressed="${!showAll && i===sel}"><span class="lvl" style="height:${pct}%"></span><span class="dn">${name}<b>${num}</b></span><span class="dh">${absent?'Abs.':(h?String(Math.round(h*100)/100).replace('.',','):'–')}</span></button>`;
+    }).join('') + `</div><button type="button" class="lx-all" data-all="1">${showAll ? 'Afficher un jour à la fois' : 'Voir les 5 jours'}</button>`;
+    if (strip.dataset.html !== html) { strip.innerHTML = html; strip.dataset.html = html; }
+
+    cards.forEach((c,i) => { const off = !showAll && i !== sel; if (c.classList.contains('lx-off') !== off) c.classList.toggle('lx-off', off); });
+  }
+
+  function run(){
+    queued = false;
+    try {
+      const days = document.getElementById('days');
+      if (days) { enhanceZones(days); enhanceHours(days); enhanceStrip(); }
+      const adays = document.getElementById('adminDays');
+      if (adays) { enhanceZones(adays); enhanceHours(adays); }
+      if (window.__lxAdmin) window.__lxAdmin();
+    } catch (e) { console.warn('Affichage semaine : ', e); }
+  }
+  function schedule(){ if (!queued) { queued = true; requestAnimationFrame(run); } }
+
+  const app = document.getElementById('app');
+  if (app) new MutationObserver(schedule).observe(app, { childList:true, subtree:true, characterData:true });
+  document.addEventListener('input', schedule, true);
+  document.addEventListener('change', schedule, true);
+  schedule();
+})();
+
+/* ===== Responsable : navigation par onglets, semaine lisible, statuts colorés =====
+   Couche d'affichage uniquement : les boutons d'origine restent ceux qui agissent. */
+(() => {
+  const MON = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  let tab = 'week', editorOpen = false;
+
+  // --- Semaines : flèches précédente / suivante + libellé clair ---
+  function mondayOf(v){
+    const m = /^(\d{4})-W(\d{2})$/.exec(v || ''); if (!m) return null;
+    const y = +m[1], w = +m[2];
+    const jan4 = new Date(y, 0, 4, 12); const day = (jan4.getDay() + 6) % 7;
+    const mon = new Date(jan4); mon.setDate(jan4.getDate() - day + (w - 1) * 7); return mon;
+  }
+  function weekValue(d){
+    const t = new Date(d); t.setHours(12,0,0,0); t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+    const y = t.getFullYear(); const jan4 = new Date(y,0,4,12);
+    const w = 1 + Math.round(((t - jan4) / 864e5 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
+    return `${y}-W${String(w).padStart(2,'0')}`;
+  }
+  function label(v){
+    const mon = mondayOf(v); if (!mon) return 'Choisir une semaine';
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const cur = weekValue(new Date()) === v;
+    return `Semaine ${+v.slice(-2)}<small>du ${mon.getDate()} ${MON[mon.getMonth()]} au ${sun.getDate()} ${MON[sun.getMonth()]} ${sun.getFullYear()}${cur ? ', semaine en cours' : ''}</small>`;
+  }
+  function weekNav(input){
+    const row = input.closest('.field-row') || input.parentElement; if (!row) return;
+    let nav = row.previousElementSibling;
+    if (!nav || !nav.classList.contains('lx-weeknav')) {
+      nav = document.createElement('div'); nav.className = 'lx-weeknav';
+      nav.innerHTML = `<button type="button" data-d="-7" aria-label="Semaine précédente">‹</button><div class="lx-wl"></div><button type="button" data-d="7" aria-label="Semaine suivante">›</button>`;
+      row.before(nav);
+      nav.onclick = e => {
+        const b = e.target.closest('button[data-d]'); if (!b) return;
+        const mon = mondayOf(input.value) || new Date(); mon.setDate(mon.getDate() + Number(b.dataset.d));
+        input.value = weekValue(mon); input.dispatchEvent(new Event('change', { bubbles:true }));
+      };
+    }
+    const html = label(input.value); const l = nav.querySelector('.lx-wl');
+    if (l.innerHTML !== html) l.innerHTML = html;
+  }
+
+  // --- Onglets responsable ---
+  function sections(){
+    return {
+      week: ['adminDashboardCard','adminListCard','adminEditor'].map(id => document.getElementById(id)).filter(Boolean),
+      archives: [document.getElementById('adminArchivesCard')].filter(Boolean)
+    };
+  }
+  function applyTab(){
+    const s = sections();
+    s.week.forEach(el => { const off = tab !== 'week'; if (el.classList.contains('lx-off') !== off) el.classList.toggle('lx-off', off); });
+    s.archives.forEach(el => { const off = tab !== 'archives'; if (el.classList.contains('lx-off') !== off) el.classList.toggle('lx-off', off); });
+    document.querySelectorAll('.lx-adminnav button[data-t]').forEach(b => { const on = String(b.dataset.t === tab); if (b.getAttribute('aria-pressed') !== on) b.setAttribute('aria-pressed', on); });
+  }
+  async function goTab(t){
+    if (t === 'admin') { document.getElementById('adminManagementBtn')?.click(); return; }
+    tab = t;
+    if (t === 'archives' && !document.getElementById('adminArchivesCard') && typeof window.renderAdminArchives === 'function') {
+      try { await window.renderAdminArchives(); } catch (_) {}
+    }
+    applyTab(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function adminNav(){
+    const list = document.getElementById('adminListCard'); if (!list) return;
+    const toolbar = document.querySelector('#app > .toolbar.card'); if (!toolbar) return;
+    let nav = document.querySelector('.lx-adminnav');
+    if (!nav) {
+      tab = 'week';
+      nav = document.createElement('nav'); nav.className = 'lx-adminnav'; nav.setAttribute('aria-label','Espace responsable');
+      nav.innerHTML = `<button type="button" data-t="week">Feuilles de la semaine</button><button type="button" data-t="archives">Archives</button><button type="button" data-t="admin">Administratif</button>`;
+      toolbar.after(nav);
+      nav.onclick = e => { const b = e.target.closest('button[data-t]'); if (b) goTab(b.dataset.t); };
+    }
+    applyTab();
+  }
+
+  // --- Statut des feuilles dans la liste ---
+  function rowStatus(){
+    document.querySelectorAll('.admin-sheet-row').forEach(r => {
+      const t = (r.querySelector('.meta')?.textContent || '');
+      const st = /À valider/.test(t) ? 'submitted' : /Validée/.test(t) ? 'approved' : /En cours/.test(t) ? 'draft' : 'none';
+      if (r.dataset.lxSt !== st) { r.classList.remove('lx-s-submitted','lx-s-approved','lx-s-draft','lx-s-none'); r.classList.add('lx-s-' + st); r.dataset.lxSt = st; }
+    });
+  }
+
+  // --- Éditeur ouvert : on remonte en haut de page ---
+  function editorFocus(){
+    const ed = document.getElementById('adminEditor');
+    const open = !!ed && !ed.classList.contains('hidden') && ed.children.length > 0;
+    if (open && !editorOpen) window.scrollTo({ top: 0 });
+    editorOpen = open;
+  }
+
+  window.__lxAdmin = () => {
+    try {
+      ['weekInput','adminWeekInput'].forEach(id => { const i = document.getElementById(id); if (i) weekNav(i); });
+      adminNav(); rowStatus(); editorFocus();
+    } catch (e) { console.warn('Affichage responsable : ', e); }
+  };
+})();
+
+</script>
 </body>
 </html>
